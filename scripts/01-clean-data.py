@@ -1,9 +1,8 @@
 import pandas as pd
 
 # Load temperature data
-temperature_path = "temperatures-modern.xlsx"
-xls = pd.ExcelFile(temperature_path)
-df_temp = xls.parse('temperatures-modern')
+temperature_path = "temperatures-modern.csv"
+df_temp = pd.read_csv(temperature_path)
 
 # Filter for January
 january_df = df_temp[df_temp['month'] == 'Jan']
