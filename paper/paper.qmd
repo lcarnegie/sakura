@@ -27,6 +27,7 @@ execute:
     warning: false
     message: false
     jupyter: "python"
+thanks: "Code and workflow available at: "https://github.com/lcarnegie/sakura" 
 ---
 
 # Introduction and Motivation
