@@ -1,3 +1,12 @@
+# ============= PREAMBLE =============
+# Last Edited By: Chris Lu
+# Date: March 25, 2025
+# Description: Script to clean and merge temperature and sakura blooming data
+#             - Loads temperature data and filters for January
+#             - Loads sakura (cherry blossom) data
+#             - Merges datasets by station name and year
+# ====================================
+
 import pandas as pd
 
 # Load temperature data
