@@ -3,7 +3,7 @@ title: "Your Paper Title"
 subtitle: "So fancy!"
 author:
     - Luca Carnegie
-    - Chris Du
+    - Chris Lu
     - Russell Luchin
     - Randall Ni
 abstract:
