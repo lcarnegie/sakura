@@ -22,7 +22,7 @@ print("Modern bloom data\n" + str(df_modern_blooming.head())) # Print first 5 ro
 print()
 print("Historical temp/bloom data\n" + str(df_historical_temp.head())) # Print first 5 rows of historical temperature data
 
-## HISTORICAL DATA ##
+## TRANSFORM HISTORICAL DATA ##
 
 # drop unnecessary columns
 df_historical_temp = df_historical_temp.drop(columns=["study_source", "flower_source_name", "flower_source"])
@@ -46,4 +46,15 @@ df_historical_temp = df_historical_temp[["year", "flower_date", "flower_doy", "t
 # cut off to 1952 and earlier (the rest we have modern data for)
 df_historical_temp = df_historical_temp[df_historical_temp["year"] <= 1952]
 
+## TRANSFORM MODERN DATA ##
 
+### Filter modern temp data
+
+### Filter modern flowering data 
+
+### Merge modern temp and flowering data
+
+## MERGE DATASETS ##
+
+## SAVE DATA ##
+# Save cleaned data to CSV files
