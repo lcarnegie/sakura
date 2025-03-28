@@ -4,7 +4,7 @@
 # Description: 
 #       - Simulation script that generates synthetic cherry blossom 
 #         flowering data for Kyoto from 800 to 2024 CE, including dates 
-#         and emperatures. 
+#         and temperatures. 
 #       - Creates visualizations showing historical flowering patterns 
 #         and climate relationships.
 # ====================================
