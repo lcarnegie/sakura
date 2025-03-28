@@ -10,7 +10,6 @@ abstract:
     This is the abstract of your paper. Write a brief summary of your research,
     including your objectives, methods, key results, and main conclusions.
     Keep it concise but informative.
-keywords: [keyword1, keyword2, keyword3]
 format:
     pdf:
         documentclass: article
@@ -20,14 +19,15 @@ format:
         colorlinks: true
         fig-cap-location: bottom
         tbl-cap-location: top
-        geometry: "margin=1in"  
+        geometry: "margin=1.5in"  
 bibliography: references.bib
 execute:
     echo: false  # Hide code by default
     warning: false
     message: false
     jupyter: "python"
-thanks: "Code and workflow available at: "https://github.com/lcarnegie/sakura" 
+nocite: "@*"
+thanks: "Code and workflow available at: https://github.com/lcarnegie/sakura" 
 ---
 
 # Introduction and Motivation
