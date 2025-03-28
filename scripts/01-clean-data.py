@@ -8,30 +8,42 @@
 # ====================================
 
 import pandas as pd
+import numpy as np
 
-# Load temperature data
-temperature_path = "temperatures-modern.csv"
-df_temp = pd.read_csv(temperature_path)
+## LOAD DATA ##
 
-# Filter for January
-january_df = df_temp[df_temp['month'] == 'Jan']
-january_table_extended = january_df[['station_name', 'year', 'month', 'month_date', 'mean_temp_c']]
+df_modern_temp = pd.read_csv("data/raw data/cookson_cleaned_csvs/temperatures-modern.csv") # Load modern temperature
+df_modern_blooming = pd.read_csv("data/raw data/cookson_cleaned_csvs/sakura-modern.csv") # Load modern blooming data
+df_historical_temp = pd.read_csv("data/raw data/cookson_cleaned_csvs/sakura-historical.csv") # Load historical temperature data
 
-# Display the cleaned January dataset
-print("January Temperatures Sample:")
-print(january_table_extended.head())
+print("Modern Temp data\n" + str(df_modern_temp.head())) # Print first 5 rows of modern temperature data
+print()
+print("Modern bloom data\n" + str(df_modern_blooming.head())) # Print first 5 rows of modern blooming data
+print()
+print("Historical temp/bloom data\n" + str(df_historical_temp.head())) # Print first 5 rows of historical temperature data
 
-# Load sakura data
-sakura_path = "sakura-modern.csv"
-sakura_df = pd.read_csv(sakura_path)
+## HISTORICAL DATA ##
 
-# Display the sakura data
-print("\\nSakura Data Sample:")
-print(sakura_df.head())
+# drop unnecessary columns
+df_historical_temp = df_historical_temp.drop(columns=["study_source", "flower_source_name", "flower_source"])
 
-# Merge on station_name and year
-merged_df = pd.merge(sakura_df, january_table_extended, on=['station_name', 'year'], how='inner')
+# Merge reconstructed temp with observed temp into one col (prioritize observed)
+# If observed temp is NaN, fill with reconstructed temp
+df_historical_temp["temp_march"] = df_historical_temp["temp_c_obs"].combine_first(df_historical_temp["temp_c_recon"])
 
-# Display the merged dataset
-print("\\nMerged Data Sample:")
-print(merged_df.head())
+# convert day of year (where not NaN) to integer
+df_historical_temp["flower_doy"] = df_historical_temp["flower_doy"].astype("Int64")
+
+# convert temp_march, temp_c_obs and temp_c_recon (where not NaN) to floats, fill flower_date with <NA>
+df_historical_temp["flower_date"] = df_historical_temp["flower_date"].fillna(pd.NA)
+df_historical_temp["temp_march"] = df_historical_temp["temp_march"].astype("Float64")
+df_historical_temp["temp_c_obs"] = df_historical_temp["temp_c_obs"].astype("Float64")
+df_historical_temp["temp_c_recon"] = df_historical_temp["temp_c_recon"].astype("Float64")
+
+# reorder columns
+df_historical_temp = df_historical_temp[["year", "flower_date", "flower_doy", "temp_march", "temp_c_obs", "temp_c_recon"]]
+
+# cut off to 1952 and earlier (the rest we have modern data for)
+df_historical_temp = df_historical_temp[df_historical_temp["year"] <= 1952]
+
+
