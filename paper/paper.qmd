@@ -19,14 +19,14 @@ format:
         colorlinks: true
         fig-cap-location: bottom
         tbl-cap-location: top
-        geometry: "margin=1.5in"  
+        geometry: "margin=1in" # print margins (change if wanting to)
 bibliography: references.bib
 execute:
     echo: false  # Hide code by default
     warning: false
     message: false
     jupyter: "python"
-nocite: "@*"
+nocite: "@*" # display all references by default
 thanks: "Code and workflow available at: https://github.com/lcarnegie/sakura" 
 ---
 
