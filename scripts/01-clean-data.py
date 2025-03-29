@@ -1,7 +1,8 @@
 # ============= PREAMBLE =============
-# Last Edited By: Chris Lu
-# Date: March 25, 2025
-# Description: Script to clean and merge temperature and sakura blooming data
+# Last Edited By: Luca Carnegie
+# Date: March 28, 2025
+# Description: 
+#             - Script to clean and merge temperature and sakura blooming data
 #             - Loads temperature data and filters for January
 #             - Loads sakura (cherry blossom) data
 #             - Merges datasets by station name and year
@@ -43,7 +44,7 @@ df_historical_temp = df_historical_temp.drop(columns=["study_source", "flower_so
 # reorder columns
 df_historical_temp = df_historical_temp[["year", "flower_date", "flower_doy", "temp_march"]]
 
-#rename cols
+# rename cols
 df_historical_temp = df_historical_temp.rename(columns={"temp_march": "avg_temp_march_c"})
 
 # cut off to 1952 and earlier (the rest we have modern data for)
@@ -71,6 +72,10 @@ df_modern_bloom = df_modern_bloom.rename(columns={"mean_temp_c": "avg_temp_march
 
 df_flower = pd.concat([df_historical_bloom, df_modern_bloom], ignore_index=True)
 
+# change day of year to integer
+df_flower["flower_doy"] = df_flower["flower_doy"].astype("Int64")
+df_flower["flower_date"] = df_flower["flower_date"].fillna(pd.NA) # fill flower_date with <NA>
+
 ## SAVE DATA ##
 # Save cleaned data to CSV files
-df_flower.to_csv("data/analysis_data/flowering_data.csv", index=False) # Save cleaned data to CSV file
+df_flower.to_csv("data/analysis_data/clean_data.csv", index=False) # Save cleaned data to CSV file

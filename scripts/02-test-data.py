@@ -55,7 +55,7 @@ def test_value_ranges():
     
     # Year range
     assert df['year'].min() >= 800, "Year values are too low"
-    assert df['year'].max() <= 1300, "Year values are too high"
+    assert df['year'].max() <= 2024, "Year values are too high"
     
     # DOY range (day of year)
     valid_doy = df['flower_doy'].dropna()
@@ -117,3 +117,6 @@ def test_report_missing_values():
     
     # This isn't an assertion, just informational
     assert True
+
+if __name__ == "__main__":
+    pytest.main([__file__])
