@@ -47,7 +47,13 @@ df_historical_temp = df_historical_temp[["year", "flower_date", "flower_doy", "t
 # rename cols
 df_historical_temp = df_historical_temp.rename(columns={"temp_march": "avg_temp_march_c"})
 
-# cut off to 1952 and earlier (the rest we have modern data for)
+# add column name for censored or not (1 for censored, 0 for not censored)
+df_historical_temp["censored"] = np.where(df_historical_temp["flower_date"].isna(), 1, 0)
+
+# save historical data to CSV file for one model
+df_historical_temp.to_csv("data/analysis_data/historic_bloom.csv", index=False) # Save historical data to CSV file
+
+# then cut off to 1952 and earlier (merge with modern data)
 df_historical_bloom = df_historical_temp[df_historical_temp["year"] <= 1952]
 
 ## TRANSFORM MODERN DATA ##
@@ -68,6 +74,9 @@ df_modern_bloom = df_modern_blooming.merge(df_modern_temp, how="inner", on=["yea
 ### rename cols
 df_modern_bloom = df_modern_bloom.rename(columns={"mean_temp_c": "avg_temp_march_c"})
 
+# add column name for censored or not (1 for censored, 0 for not censored)
+df_modern_bloom["censored"] = np.where(df_historical_temp["flower_date"].isna(), 1, 0)
+
 ## MERGE DATASETS ##
 
 df_flower = pd.concat([df_historical_bloom, df_modern_bloom], ignore_index=True)
@@ -78,4 +87,4 @@ df_flower["flower_date"] = df_flower["flower_date"].fillna(pd.NA) # fill flower_
 
 ## SAVE DATA ##
 # Save cleaned data to CSV files
-df_flower.to_csv("data/analysis_data/clean_data.csv", index=False) # Save cleaned data to CSV file
+df_flower.to_csv("data/analysis_data/merged_historic_modern_bloom.csv", index=False) # Save cleaned data to CSV file
