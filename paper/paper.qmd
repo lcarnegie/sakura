@@ -1,6 +1,6 @@
 ---
 title: "Your Paper Title"
-subtitle: "So fancy!"
+subtitle: "Understanding Temperature's Role in Earlier Cherry Blossom Blooming Times in Kyoto, Japan"
 author:
     - Luca Carnegie
     - Chris Lu
@@ -19,7 +19,8 @@ format:
         colorlinks: true
         fig-cap-location: bottom
         tbl-cap-location: top
-        geometry: "margin=1in" # print margins (change if wanting to)
+        fontsize: "12"
+        geometry: "margin=1.2in" # print margins (change if wanting to)
 bibliography: references.bib
 execute:
     echo: false  # Hide code by default
@@ -32,18 +33,12 @@ thanks: "Code and workflow available at: https://github.com/lcarnegie/sakura"
 
 # Introduction
 
-Before the advent of modern technology, people understood themselves, their environments, and their cultures through the cycle of life and death. The Japanese tradition of *hanami* (loosely translated as 'flower-viewing') is an important cultural tradition that honors this perspective, being associated with the flowering birth of cherry blossom trees in the late spring. In the city of Kyoto in particular, local newspapers have recorded the dates of tree flowering since the late 19th century, but researchers like @Aono2010 have been able to estimate flowering dates as far back as the year 812 CE, by combing through historical records such as diaries, poetry and other written documents describing *hanami* parties throughout the ages. However, rising global temperatures create an anomaly, highlighting the need to understand the historical and modern links between temperature and cherry blossom bloom timing. Without it, cherished traditions like *hanami* may struggle to adapt to climate shifts, risking their disappearance as a unique Japanese custom.
+Before the advent of modern technology, people understood themselves, their environments, and their cultures through the cycle of life and death. The Japanese tradition of *hanami* (loosely translated as 'flower-viewing') is an important cultural tradition that honors this perspective, being associated with the flowering birth of cherry blossom trees in the late spring. In the city of Kyoto in particular, local newspapers have recorded the dates of tree flowering since the late 19th century, but researchers like @Aono2010 have been able to estimate flowering dates as far back as the year 812 CE, by combing through historical records such as diaries, poetry and other written documents describing *hanami* parties throughout the ages. However, rising global temperatures create an anomaly, highlighting the need to understand the historical and modern links between temperature and cherry blossom bloom timing. Without it, cherished traditions like *hanami* may struggle to adapt to climate shifts, risking their disappearance as a unique Japanese custom. To this end, work like @Allen2014's analyse and relatively modern blooming data over a 29-year period, but the key weakness of this is a lack of perspective. Given that their data only covers a small part of the entire recorded history of cherry blossom blooming, their analysis and subsequent model have a key weakness - they do not take into account large scale trends of blooming and their relationship to the change in climate that has happened in the last 150 years, which @Aono2010's data can illustrate. 
 
-In this paper, we analyze the nearly 1200-year record compiled by @Aono2010 as well as modern data compiled by the Japanese Meteorological Agency (JMA) [@JMA_sakura] [@JMA_temp], compiled together by
+In this paper, we analyse and model the nearly 1200-year record compiled by @Aono2010 along modern data compiled by the Japanese Meteorological Agency (JMA) [@JMA_sakura] [@JMA_temp], collected together by @Cookson. In particular, we seek to answer the question of whether warmer temperatures lead to earlier blooming times. @sec-lit-review does a broad review of existing work surrounding cherry blossoms, their significance, and efforts to understand their behaviour related to climate. @sec-data covers the data sources, methodology, and conducts an exploratory analysis of the dataset. @sec-model proposes a model of cherry blossom flowering day as a function of mean March temperature in Kyoto and lists its results. @sec-discussion critically examines the data and results, comes to several conclusions about the dataset, and proposes new areas of exploration. This analysis highlights the need for... [FILL IN AT END]
 
-```         
-
-This paper first focuses on quantifying a relationship between mean March temperature and the day of blooming of cherry blossom, using a mixture of historical data (@A)
-```
-
-# Literature Review
-
-```         
+# Literature Review {#sec-lit-review}
+       
 The relationship between sakura blooming date and other factors was first examined in depth. A notable amount of scholarship addresses the relationship between different variables and and the flowering dates of sakura, from humanistic cultural studies perspectives ranging to scientific plant biology, phenological modeling, and climatology studies. 
 
 @Acevedo2021 provides a rich cultural context for understanding cherry blossom phenology in Kyoto. Her research highlights a 1200-year flowering record of *Prunus jamasakura* in Kyoto, describing it as "the longest and most complete phenological record in existence." These records, compiled from imperial court documents, poetry, and newspaper accounts of *hanami* celebrations, reveal that Kyoto's cherry trees have responded to major climate fluctuations throughout history, with progressive advancement in bloom dates occurring after approximately 1830. This shift aligns with the end of the Little Ice Age and the onset of modern warming trends. Beyond scientific significance, Acevedo explores how sakura in Kyoto have traditionally served as indicators of agricultural prosperity, with early-falling petals considered inauspicious for rice harvests, demonstrating their enduring role as both cultural and climatic storytellers in Japanese society.
@@ -53,43 +48,28 @@ According to @Aono2008, cherry trees in Kyoto are currently experiencing warmer 
 Next, Xu et al.'s research provides significant physiological evidence supporting the temperature-flowering relationship in cherry trees [@Xu2023]. Their study not only documented how temperature fluctuations caused 2-3 day shifts in flowering periods between 2016-2017, but also established varying cold tolerance rankings among cherry varieties that influence bloom timing. The authors revealed the underlying hormonal mechanisms—specifically changes in ABA, ZR, IAA, and GA3 levels—that regulate flower bud differentiation in response to temperature changes. This work strengthens our understanding of how temperature directly affects cherry blossom phenology through specific physiological pathways, offering valuable context for examining historical sakura flowering records in Kyoto and predicting how future climate patterns might alter traditional bloom timing.
 
 @Allen2014, "Modeling daily flowering probabilities" offers an approach to rigorous quantitative predictions about cherry blossom phenology under climate change in Japan. They analyzed four cherry taxa (Prunus spachiana, P. × yedoensis, P. jamasakura, and P. lannesiana) using flexible Bayesian survival regression models applied to a 29-year dataset from Tama Forest Cherry Preservation Garden in Hachioji. Their approach incorporated both chilling requirements and heat accumulation mechanisms, finding that early-flowering species like *P. spachiana* were particularly sensitive to warming temperatures. The models predicted that all studied cherry taxa will flower approximately 30 days earlier by 2100 under the A1B emissions scenario, with 2-6 days greater uncertainty around mean flowering dates. Allen et al. found that sequential models (where trees require chilling before responding to warming) better predicted flowering times than simpler approaches. The study demonstrates that while cherry trees will continue to meet their chilling requirements under projected climate scenarios, accelerated heat accumulation will drive the dramatic advancement in flowering times.
-```
 
-# Research Question
 
-Clearly state your primary research question(s) and hypotheses if applicable.
 
-# Methodology
 
-## Research Design
 
-## Research Design
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eu justo in nisl tincidunt tincidunt. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Phasellus lacinia, urna eget venenatis vestibulum, nisi metus feugiat nisi, vel faucibus magna sem quis tellus. Donec eget ullamcorper magna, non lacinia erat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Maecenas id eleifend enim. Cras rhoncus, magna in tempus tempor, dolor magna facilisis nisi, at ultrices velit mi quis orci.
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus. Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi. Sed vitae justo eu ipsum maximus efficitur. Curabitur at dolor sed felis laoreet interdum vitae id mi. Fusce gravida pulvinar felis, a sagittis nisi sagittis non.
+# Data {#sec-data}
 
-## Analytical Approach
+## Data Sources 
 
-# Data
-
-## Data Source, Collection, and Cleaning
+## Methodology
 
 ## Data Exploration
 
-```{python}
-
-
-
-```
-
-# Modeling
+# Modeling {#sec-model}
 
 ## Model Specification
 
 ## Results
 
-# Discussion
+# Discussion {#sec-discussion}
 
 ## Implications of Findings
 
@@ -99,8 +79,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 
 ## Future Research Directions
 
-# Conclusion
-
-Summarize your key findings and their broader significance.
-
 # References
+
+# Appendix {#sec-appendix}
