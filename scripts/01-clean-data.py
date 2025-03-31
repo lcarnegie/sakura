@@ -47,26 +47,23 @@ df_historical_temp = df_historical_temp[["year", "flower_date", "flower_doy", "t
 # rename cols
 df_historical_temp = df_historical_temp.rename(columns={"temp_march": "avg_temp_march_c"})
 
-# add column name for censored or not (1 for censored, 0 for not censored)
-df_historical_temp["censored"] = np.where(df_historical_temp["flower_date"].isna(), 1, 0)
-
 # save historical data to CSV file for one model
 df_historical_temp.to_csv("data/analysis_data/historic_bloom.csv", index=False) # Save historical data to CSV file
 
-# then cut off to 1952 and earlier (merge with modern data)
-df_historical_bloom = df_historical_temp[df_historical_temp["year"] <= 1952]
 
 ## TRANSFORM MODERN DATA ##
 
 ### Filter modern temp data to just Kyoto and March Temps (same as historical) 
 df_modern_temp = df_modern_temp[df_modern_temp["station_name"] == "Kyoto"]
 df_modern_temp = df_modern_temp[df_modern_temp["month"] == "Mar"]
-df_modern_temp = df_modern_temp[df_modern_temp["year"] >= 1953] # cut off to 1953 and later (the rest we have historical data for)
 df_modern_temp = df_modern_temp.drop(columns=["station_id", "station_name", "month", "month_date"])
 
 ### Filter modern flowering data to just Kyoto and March Temps 
 df_modern_blooming = df_modern_blooming[df_modern_blooming["station_name"] == "Kyoto"]
 df_modern_blooming = df_modern_blooming.drop(columns=["station_id", "station_name", "latitude", "longitude", "full_bloom_date", "full_bloom_doy"])
+
+# convert flower_doy to integer
+df_modern_blooming["flower_doy"] = df_modern_blooming["flower_doy"].astype("Int64")
 
 ### Merge modern temp and flowering data
 df_modern_bloom = df_modern_blooming.merge(df_modern_temp, how="inner", on=["year"])
@@ -74,17 +71,6 @@ df_modern_bloom = df_modern_blooming.merge(df_modern_temp, how="inner", on=["yea
 ### rename cols
 df_modern_bloom = df_modern_bloom.rename(columns={"mean_temp_c": "avg_temp_march_c"})
 
-# add column name for censored or not (1 for censored, 0 for not censored)
-df_modern_bloom["censored"] = np.where(df_historical_temp["flower_date"].isna(), 1, 0)
+## save modern data to CSV file for one model
+df_modern_bloom.to_csv("data/analysis_data/modern_bloom.csv", index=False) # Save modern data to CSV file
 
-## MERGE DATASETS ##
-
-df_flower = pd.concat([df_historical_bloom, df_modern_bloom], ignore_index=True)
-
-# change day of year to integer
-df_flower["flower_doy"] = df_flower["flower_doy"].astype("Int64")
-df_flower["flower_date"] = df_flower["flower_date"].fillna(pd.NA) # fill flower_date with <NA>
-
-## SAVE DATA ##
-# Save cleaned data to CSV files
-df_flower.to_csv("data/analysis_data/merged_historic_modern_bloom.csv", index=False) # Save cleaned data to CSV file
