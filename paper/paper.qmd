@@ -30,36 +30,34 @@ nocite: "@*" # display all references by default
 thanks: "Code and workflow available at: https://github.com/lcarnegie/sakura" 
 ---
 
-# Introduction and Motivation
+# Introduction
 
-    The annual blooming of cherry blossoms (Prunus species, more commonly known as sakura) represents not only a culturally significant event across many East Asian countries but also serves as a valuable biological indicator of climate patterns and changes; particularly, the tradition of hanami (flower viewing) dates all the way back to the Heian period in Japan. This paper will examine the relationship between temperature fluctuations and the timing of sakura flowering dates, a connection that has gained increased scientific attention as global climate change accelerates. Historical records of cherry blossom flowering, some dating back several centuries in Japan, provide an exceptionally rare long-term dataset for analyzing phenological responses to temperature variations [@Aono2008]. By quantifying this relationship through robust statistical methods, we aim to contribute to the growing body of research on biological responses to climate change while also contextualizing the potential cultural impacts of shifting bloom times. The preservation of these iconic natural events holds both scientific value for understanding ecosystem responses to warming trends and cultural significance for communities where cherry blossom festivals represent important economic and social traditions.
+Before the advent of modern technology, people understood themselves, their environments, and their cultures through the cycle of life and death. The Japanese tradition of *hanami* (loosely translated as 'flower-viewing') is an important cultural tradition that honors this perspective, being associated with the flowering birth of cherry blossom trees in the late spring. In the city of Kyoto in particular, local newspapers have recorded the dates of tree flowering since the late 19th century, but researchers like @Aono2010 have been able to estimate flowering dates as far back as the year 812 CE, by combing through historical records such as diaries, poetry and other written documents describing *hanami* parties throughout the ages. However, rising global temperatures create an anomaly, highlighting the need to understand the historical and modern links between temperature and cherry blossom bloom timing. Without it, cherished traditions like *hanami* may struggle to adapt to climate shifts, risking their disappearance as a unique Japanese custom.
 
+In this paper, we analyze the nearly 1200-year record compiled by @Aono2010 as well as modern data compiled by the Japanese Meteorological Agency (JMA) [@JMA_sakura] [@JMA_temp], compiled together by
+
+```         
+
+This paper first focuses on quantifying a relationship between mean March temperature and the day of blooming of cherry blossom, using a mixture of historical data (@A)
+```
 
 # Literature Review
 
-    This literature review examines the extensive body of scholarly journals and articles addressing the correlation between temperature and sakura flowering dates, integrating perspectives from plant biology, phenological modeling, climatology, and cultural studies. The biological mechanisms underlying temperature sensitivity in cherry blossoms involve complex interactions between winter chilling requirements and early spring temperatures [@Allen2014]. Concurrently, the cultural documentation of flowering dates through imperial court diaries, temple records, and festival calendars has created one of the longest continuous biological datasets in existence, with some records from Kyoto extending back to 812 CE [@Aono2008].
+```         
+The relationship between sakura blooming date and other factors was first examined in depth. A notable amount of scholarship addresses the relationship between different variables and and the flowering dates of sakura, from humanistic cultural studies perspectives ranging to scientific plant biology, phenological modeling, and climatology studies. 
 
-    To begin with, Acevedo's thesis, "Sakura Storytellers" provides a rich cultural context for understanding cherry blossom phenology in Kyoto [@Acevedo2021]. Her research highlights the 1200-year flowering record of Prunus jamasakura in Kyoto, describing it as "the longest and most complete phenological record in existence." These records, compiled from imperial court documents, poetry, and newspaper accounts of hanami celebrations, reveal that Kyoto's cherry trees have responded to major climate fluctuations throughout history, with progressive advancement in bloom dates occurring after approximately 1830. According to Aono and Kazui's analysis referenced in the thesis, cherry trees in Kyoto are currently experiencing warmer conditions than at any time in the past twelve centuries, resulting in average flowering dates that are seven days earlier in the 1971-2000 period compared to historical averages [@Aono2008]. Beyond scientific significance, Acevedo explores how sakura in Kyoto have traditionally served as indicators of agricultural prosperity, with early-falling petals considered inauspicious for rice harvests, demonstrating their enduring role as both cultural and climatic storytellers in Japanese society.
+@Acevedo2021 provides a rich cultural context for understanding cherry blossom phenology in Kyoto. Her research highlights a 1200-year flowering record of *Prunus jamasakura* in Kyoto, describing it as "the longest and most complete phenological record in existence." These records, compiled from imperial court documents, poetry, and newspaper accounts of *hanami* celebrations, reveal that Kyoto's cherry trees have responded to major climate fluctuations throughout history, with progressive advancement in bloom dates occurring after approximately 1830. This shift aligns with the end of the Little Ice Age and the onset of modern warming trends. Beyond scientific significance, Acevedo explores how sakura in Kyoto have traditionally served as indicators of agricultural prosperity, with early-falling petals considered inauspicious for rice harvests, demonstrating their enduring role as both cultural and climatic storytellers in Japanese society.
 
-    Next, Xu et al.'s research provides significant physiological evidence supporting the temperature-flowering relationship in cherry trees [@Xu2023]. Their study not only documented how temperature fluctuations caused 2-3 day shifts in flowering periods between 2016-2017, but also established varying cold tolerance rankings among cherry varieties that influence bloom timing. The authors revealed the underlying hormonal mechanisms—specifically changes in ABA, ZR, IAA, and GA3 levels—that regulate flower bud differentiation in response to temperature changes. This work strengthens our understanding of how temperature directly affects cherry blossom phenology through specific physiological pathways, offering valuable context for examining historical sakura flowering records in Kyoto and predicting how future climate patterns might alter traditional bloom timing.
+According to @Aono2008, cherry trees in Kyoto are currently experiencing warmer conditions than at any time in the past twelve centuries, resulting in average flowering dates that are seven days earlier in the 1971-2000 period compared to historical averages. 
 
-    In addition, Allen et al.'s research, "Modeling daily flowering probabilities" offers rigorous quantitative predictions about cherry blossom phenology under climate change in Japan [@Allen2014]. They analyzed four cherry taxa (Prunus spachiana, P. × yedoensis, P. jamasakura, and P. lannesiana) using flexible Bayesian survival regression models applied to a 29-year dataset from Tama Forest Cherry Preservation Garden in Hachioji. Their approach incorporated both chilling requirements and heat accumulation mechanisms, finding that early-flowering species like P. spachiana were particularly sensitive to warming temperatures. The models predicted that all studied cherry taxa will flower approximately 30 days earlier by 2100 under the A1B emissions scenario, with 2-6 days greater uncertainty around mean flowering dates. The researchers find that sequential models (where trees require chilling before responding to warming) better predicted flowering times than simpler approaches. The study demonstrates that while cherry trees will continue to meet their chilling requirements under projected climate scenarios, accelerated heat accumulation will drive the dramatic advancement in flowering times.
+Next, Xu et al.'s research provides significant physiological evidence supporting the temperature-flowering relationship in cherry trees [@Xu2023]. Their study not only documented how temperature fluctuations caused 2-3 day shifts in flowering periods between 2016-2017, but also established varying cold tolerance rankings among cherry varieties that influence bloom timing. The authors revealed the underlying hormonal mechanisms—specifically changes in ABA, ZR, IAA, and GA3 levels—that regulate flower bud differentiation in response to temperature changes. This work strengthens our understanding of how temperature directly affects cherry blossom phenology through specific physiological pathways, offering valuable context for examining historical sakura flowering records in Kyoto and predicting how future climate patterns might alter traditional bloom timing.
 
+@Allen2014, "Modeling daily flowering probabilities" offers an approach to rigorous quantitative predictions about cherry blossom phenology under climate change in Japan. They analyzed four cherry taxa (Prunus spachiana, P. × yedoensis, P. jamasakura, and P. lannesiana) using flexible Bayesian survival regression models applied to a 29-year dataset from Tama Forest Cherry Preservation Garden in Hachioji. Their approach incorporated both chilling requirements and heat accumulation mechanisms, finding that early-flowering species like *P. spachiana* were particularly sensitive to warming temperatures. The models predicted that all studied cherry taxa will flower approximately 30 days earlier by 2100 under the A1B emissions scenario, with 2-6 days greater uncertainty around mean flowering dates. Allen et al. found that sequential models (where trees require chilling before responding to warming) better predicted flowering times than simpler approaches. The study demonstrates that while cherry trees will continue to meet their chilling requirements under projected climate scenarios, accelerated heat accumulation will drive the dramatic advancement in flowering times.
+```
 
 # Research Question
 
 Clearly state your primary research question(s) and hypotheses if applicable.
-
-# Data
-
-## Data Source, Collection, and Cleaning
-## Data Exploration
-
-```{python}
-
-
-
-```
 
 # Methodology
 
@@ -72,18 +70,33 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eu justo in nisl
 Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus. Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi. Sed vitae justo eu ipsum maximus efficitur. Curabitur at dolor sed felis laoreet interdum vitae id mi. Fusce gravida pulvinar felis, a sagittis nisi sagittis non.
 
 ## Analytical Approach
+
+# Data
+
+## Data Source, Collection, and Cleaning
+
+## Data Exploration
+
+```{python}
+
+
+
+```
+
+# Modeling
+
 ## Model Specification
 
-# Results and Interpretation
-
-## Main Findings
-## Analysis of Key Results
+## Results
 
 # Discussion
 
 ## Implications of Findings
+
 ## Limitations
+
 ## Robustness Checks
+
 ## Future Research Directions
 
 # Conclusion
