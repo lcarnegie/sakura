@@ -17,12 +17,6 @@ df_modern_temp = pd.read_csv("data/raw_data/cookson_cleaned_csvs/temperatures-mo
 df_modern_blooming = pd.read_csv("data/raw_data/cookson_cleaned_csvs/sakura-modern.csv") # Load modern blooming data
 df_historical_temp = pd.read_csv("data/raw_data/cookson_cleaned_csvs/sakura-historical.csv") # Load historical temperature data
 
-print("Modern Temp data\n" + str(df_modern_temp.head())) # Print first 5 rows of modern temperature data
-print()
-print("Modern bloom data\n" + str(df_modern_blooming.head())) # Print first 5 rows of modern blooming data
-print()
-print("Historical temp/bloom data\n" + str(df_historical_temp.head())) # Print first 5 rows of historical temperature data
-
 ## TRANSFORM HISTORICAL DATA ##
 
 # Merge reconstructed temp with observed temp into one col (prioritize observed)
@@ -41,6 +35,9 @@ df_historical_temp["temp_c_recon"] = df_historical_temp["temp_c_recon"].astype("
 # drop unnecessary columns
 df_historical_temp = df_historical_temp.drop(columns=["study_source", "flower_source_name", "flower_source", "temp_c_obs", "temp_c_recon"])
 
+# remove years with no flowering data (NaN in flower_date)
+df_historical_temp = df_historical_temp.dropna(subset=["flower_date"])
+
 # reorder columns
 df_historical_temp = df_historical_temp[["year", "flower_date", "flower_doy", "temp_march"]]
 
@@ -49,6 +46,8 @@ df_historical_temp = df_historical_temp.rename(columns={"temp_march": "avg_temp_
 
 # save historical data to CSV file for one model
 df_historical_temp.to_csv("data/analysis_data/historic_bloom.csv", index=False) # Save historical data to CSV file
+
+
 
 
 ## TRANSFORM MODERN DATA ##
@@ -74,3 +73,4 @@ df_modern_bloom = df_modern_bloom.rename(columns={"mean_temp_c": "avg_temp_march
 ## save modern data to CSV file for one model
 df_modern_bloom.to_csv("data/analysis_data/modern_bloom.csv", index=False) # Save modern data to CSV file
 
+print(df_modern_bloom.shape)
