@@ -188,6 +188,7 @@ plt.gcf().set_facecolor('#F8F8FF')
 plt.tight_layout()
 plt.show()
 ```
+This scatterplot displays historical annual temperature records (in °C) from the year 800 CE to 2000 CE. Each pink dot represents the recorded temperature for a given year, while the solid teal line represents a 10-year moving average, smoothing out year-to-year fluctuations to highlight longer-term trends. The dashed horizontal line represents the historical mean temperature of 6.2°C. Notably, the data show considerable fluctuations over the centuries, with a relatively stable pattern through much of the pre-industrial era. However, a sharp and continuous rise in average temperature is observed beginning in the late 19th to early 20th century, suggesting significant warming recently. This trend aligns with broader patterns of climate change and may have implications for phenological events such as the timing of sakura (cherry blossom) flowering.
 
 ```{python}
 #| message: false
@@ -277,6 +278,7 @@ plt.gcf().set_facecolor('#F8F8FF')
 plt.tight_layout()
 plt.show()
 ```
+This graph showcases the annual full flowering dates of sakura from 800 to 2000 CE, plotted as day-of-year (DOY) values, where higher values indicate later blooming in the calendar year. Each pink dot corresponds to an individual year's observed full bloom date, and the solid teal line shows a 10-year moving average; the dashed horizontal line indicates the historical mean, which is 104.6. The data suggest that, while flowering dates have fluctuated across centuries, a notable trend toward earlier blooming began in the late 19th and 20th centuries. This shift coincides with the period of modern climate warming seen in the corresponding temperature graph, supporting the hypothesis that rising spring temperatures are advancing sakura bloom time. 
 
 ```{python}
 #| message: false
@@ -381,6 +383,7 @@ plt.gcf().set_facecolor('#F8F8FF')
 plt.tight_layout()
 plt.show()
 ```
+The violin plot above showcases the cherry blossom flowering date distribution by century (9th to 21st), measured in day-of-year (DOY). The dashed pink line represents the average flowering day of the year (~105 days). It was quite consistent until the 20th century (1900s), where we can see a large drop; this trend has also been carried into the 21st century, where it even dropped lower. 
 
 MODERN DATA
 
@@ -468,6 +471,7 @@ plt.gcf().set_facecolor('#F8F8FF')
 plt.tight_layout()
 plt.show()
 ```
+The scatterplot above presents the annual full flowering dates of cherry blossoms in Japan from 1950 to 2020, measured in day-of-year (DOY), where higher values represent later blooming. Each pink dot marks the full flowering day for a given year, while the solid blue line shows a 5-year moving average, smoothing short-term fluctuations to reveal broader temporal trends. Over the 70-year span, there is a clear downward trend, indicating progressively earlier flowering.
 
 ```{python}
 #| message: false
@@ -510,6 +514,7 @@ plt.gcf().set_facecolor('#F8F8FF')
 plt.tight_layout()
 plt.show()
 ```
+This scatterplot shows the annual spring temperature in Japan from 1950 to 2020, measured in degrees Celsius (°C) relative to a baseline average. Each pink dot represents the average March temperature for a given year, and the solid blue line indicates a 5-year moving average to highlight underlying climate trends. The overall trajectory shows a clear increase in average March temperatures over the 70-year period, particularly after 1990, reflecting the impact of modern global climate change. This warming trend corresponds closely with the earlier flowering of cherry blossoms during the same time frame shown in the earlier figure. Together, both graphs reinforce the connection between rising spring temperatures and timing shifts in sakura blooming.
 
 ```{python}
 #| message: false
@@ -533,6 +538,7 @@ plt.gcf().set_facecolor('#F8F8FF')
 plt.tight_layout()
 plt.show()
 ```
+This histogram highlights the frequency distribution of sakura full flowering dates in modern Japan, measured in day-of-year (DOY), for the period between 1950 and 2020. Each bar represents how often flowering occurred within a specific DOY range. The distribution is roughly bell-shaped and unimodal, with the majority of flowering dates clustered between DOY 83 and DOY 95 (approximately March 24 to April 4), suggesting a central tendency in late March. 
 
 ```{python}
 #| message: false
@@ -555,8 +561,8 @@ plt.gca().set_facecolor('#F8F8FF')  # Light background
 plt.gcf().set_facecolor('#F8F8FF')
 plt.tight_layout()
 plt.show()
-
 ```
+The figure above presents the frequency distribution of average March temperatures in Japan from 1950 to 2020. The temperature values are plotted on the x-axis in degrees Celsius (°C). The distribution is centered around -1.5°C, with a wider spread toward colder extremes and a thinner tail extending into positive temperatures. While most March temperatures during this period fall below freezing, the presence of warmer years, particularly in the latter decades, indicates a shift in climate norms. These warming trends align with observed shifts in cherry blossom phenology, where earlier flowering is increasingly correlated with milder spring conditions.
 
 ## Data Exploration
 
