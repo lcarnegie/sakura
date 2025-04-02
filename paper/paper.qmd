@@ -1,5 +1,5 @@
 ---
-title: "Your Paper Title"
+title: "Warming Degrees and Flowering Trees"
 subtitle: "Understanding Temperature's Role in Earlier Cherry Blossom Blooming Times in Kyoto, Japan"
 author:
     - Luca Carnegie
@@ -32,6 +32,8 @@ thanks: "Code and workflow available at: https://github.com/lcarnegie/sakura"
 ---
 
 ```{python}
+#| label: data-setup
+
 # Import necessary libraries 
 import pandas as pd
 import numpy as np
@@ -54,13 +56,20 @@ modern_bloom = pd.read_csv("../data/analysis_data/modern_bloom.csv")
 historic_bloom['avg_temp_march_c'] = historic_bloom['avg_temp_march_c'].round(1)
 modern_bloom['avg_temp_march_c'] = modern_bloom['avg_temp_march_c'].round(1)
 
+historic = historic_bloom
+modern = modern_bloom
+
+# Drop NaN values
+historic = historic.dropna()
+modern = modern.dropna()
+
 ```
 
 # Introduction
 
 Before the advent of modern technology, people understood themselves, their environments, and their cultures through the cycle of life and death. The Japanese tradition of *hanami* (loosely translated as 'flower-viewing') is an important cultural tradition that honors this perspective, being associated with the flowering birth of cherry blossom trees in the late spring. In the city of Kyoto in particular, local newspapers have recorded the dates of tree flowering since the late 19th century, but researchers like @Aono2010 have been able to estimate flowering dates as far back as the year 812 CE, by combing through historical records such as diaries, poetry and other written documents describing *hanami* parties throughout the ages. However, rising global temperatures create an anomaly, highlighting the need to understand the historical and modern links between temperature and cherry blossom bloom timing. Without it, cherished traditions like *hanami* may struggle to adapt to climate shifts, risking their disappearance as a unique Japanese custom. To this end, work like @Allen2014's analyse and relatively modern blooming data over a 29-year period, but the key weakness of this is a lack of perspective. Given that their data only covers a small part of the entire recorded history of cherry blossom blooming, their analysis and subsequent model have a key weakness - they do not take into account large scale trends of blooming and their relationship to the change in climate that has happened in the last 150 years, which @Aono2010's data can illustrate.
 
-We seek to answer the question of whether warmer temperatures lead to earlier blooming times. To do this, we analyse and model the nearly 1200-year record compiled by @Aono2010 in tandem with modern data compiled by the Japanese Meteorological Agency (JMA), collected and compiled together by @Cookson. @sec-lit-review does a broad review of existing work surrounding cherry blossoms, their significance, and efforts to understand their behaviour related to climate. @sec-data covers the data sources, methodology, and conducts an exploratory analysis of the dataset. @sec-model proposes a model of cherry blossom flowering day as a function of mean March temperature in Kyoto and lists its results. @sec-discussion critically examines the data and results, comes to several conclusions about the dataset, and proposes new areas of exploration. This analysis highlights the need for... \[FILL IN AT END\]
+We seek to answer the question of whether warmer temperatures lead to earlier blooming times. To do this, we analyse and model the nearly 1200-year record compiled by @Aono2010 in tandem with modern data compiled by the Japanese Meteorological Agency (JMA), collected and compiled together by @Cookson. @sec-lit-review does a broad review of existing work surrounding cherry blossoms, their significance, and efforts to understand their behaviour related to climate. @sec-data covers the data sources, methodology, and conducts an exploratory analysis of the dataset. @sec-model proposes a model of cherry blossom flowering day as a function of mean March temperature in Kyoto and lists its results. @sec-discussion critically examines the data and results, comes to several conclusions about the dataset, and proposes new areas of exploration. This analysis highlights several conclusions. First, temperature changes will have consequential effects for wildlife that function around the timing of blooming *sakura*. Next, social celebrations such as *hanami* will be impacted, changing the timing of a once-constant annual event. Finally, there is a need for more a more comprehensive inquiry into the determinants of cherry blossom blooming in Japan more generally, involving more covariates, so that more robust predictions of *sakura* blooming in Kyoto can be made. By gathering more data to make better predictions, the city of Kyoto will better be able to weather climate change and bridge their cherished traditions into the future. 
 
 # Literature Review {#sec-lit-review}
 
@@ -82,24 +91,8 @@ All of the data was transformed in Python [@python], using the `pandas` [@pandas
 
 In the historical data, @Aono2010 reconstructs the mean march temperature in Kyoto for some of the years, based on the blooming date, but also provided observed temperatures taken from local newspapers for a given year when possible. We prioritized used observed temperatures, but if none were available, then the reconstructed one was used. This created a dataset of 827 observations, from the year 812-2015. A sample of the table can be seen in @tbl-historical.
 
-With the modern data, @Cookson combined average monthly temperatures and blooming date in a single dataset for several cities across Japan. We filtered this data to solely Kyoto, with average march temperatures to match the historical data. This created a dataset with 67 observations from the year 1953-2015. A sample can be seen in @tbl-modern.
-
-In our data exploration, the `matplotlib` [@matplotlib] and `seaborn` packages were used to visualize the data.
-
-Boilerplate table
-
 ```{python}
-
-```
-
-Boilerplate Fig
-
-```{python}
-
-```
-
-```{python}
-#| label: tbl-historical
+#| label: tbl-historical-data
 #| tbl-cap: "Historical Cherry Blossom Blooming"
 
 # Rename columns for better readability
@@ -113,8 +106,10 @@ historic_bloom_renamed = historic_bloom.rename(columns={
 display(historic_bloom_renamed.head())
 ```
 
+With the modern data, @Cookson combined average monthly temperatures and blooming date in a single dataset for several cities across Japan. We filtered this data to solely Kyoto, and solely average march temperatures to match the historical data from @Aono2010. This created a dataset with 67 observations ranging from 1953 to 2015. A sample can be seen in @tbl-modern.
+
 ```{python}
-#| label: tbl-modern
+#| label: tbl-modern-data
 #| tbl-cap: "Modern Cherry Blossom Blooming"
 
 # Rename columns for better readability
@@ -129,22 +124,12 @@ modern_bloom_renamed = modern_bloom.rename(columns={
 display(modern_bloom_renamed.head())
 ```
 
-The datasets were first explored chronologically, beginning with the historical data and ending with the modern data.
-
-```{python}
-
-historic = historic_bloom
-modern = modern_bloom
-
-# Drop NaN values
-historic = historic.dropna()
-modern = modern.dropna()
-
-```
+In our data exploration, the `matplotlib` [@matplotlib] and `seaborn` packages were used to visualize and explore the data. The datasets were first explored chronologically, beginning with the historical data and ending with the modern data.
 
 HISTORICAL DATA
 
 ```{python}
+#| label: historic-temp-yr-scatter
 #| message: false
 #| echo: false
 #| warning: false
@@ -576,8 +561,6 @@ asl;dkfj;laksdfjl;asjdf;lasjdfljasl;fj;lasjdf
 
 # Discussion {#sec-discussion}
 
-alsdhj;lasjfljas;lfja;lsjf;lasjdf;
-
 ## Implications of Findings
 Our statistical analysis reveals a significant inverse relationship between pre-flowering March temperatures and sakura bloom dates, with higher temperatures consistently associated with earlier flowering time. This temperature-dependent pattern aligns with the documented global warming trend observed over recent centuries, particularly the accelerated temperature increase in the modern era.
 
@@ -588,7 +571,11 @@ From a cultural perspective, the temporal shift in cherry blossom seasons need a
 ## Limitations
 We would like to address several methodological limiting factors. Firstly, our analysis relies predominantly on data from Kyoto, representing a geographically limited subset that may not comprehensively reflect sakura phenological patterns across Japan's diverse climate regions. Secondly, although we used a merged dataset spanning from 800 CE to 2019, there are significant data gaps/missing values where we have to drop during the cleaning & merging of the two dataset. In addition, a notable limitation is the historical dataset's reliability, as large portions comprise of reconstructed values derived from local linear regression models or originated from primary sources that lack rigorous academic verification protocols. This presents challenges for establishing data provenance and reliability in accordance with contemporary scientific standards. Lastly, while our findings highlight temperature as a statistically significant predictor of bloom timing, the single-variable approach inherently overlooks other potential ecological factors. Variables such as precipitation patterns, photoperiod fluctuations, soil conditions, and winter chilling requirements may also contribute significantly to the observed advancement in flowering dates. A more comprehensive multivariate model would potentially yield enhanced predictive capacity and ecological insights.
 
-## Robustness Checks
+## Ecological Implications
+
+## Cultural Implications
+
+## Limitations
 
 ## Future Research Directions
 For future research, we would like to establish regression tree models to enhance predictive capabilities regarding sakura phenological patterns. Unlike traditional linear models, regression trees offer robust forecasting mechanisms that can better accommodate complex interactions between variables, prioritizing predictive accuracy over interpretive simplicity. Next, we recommend adding in additional environmental parameters beyond temperature. Variables warranting investigation including but not limited to precipitation frequency and intensity, atmospheric humidity gradients, soil composition metrics, photoperiod fluctuations, and cumulative chilling units during dormancy periods. Such multidimensional modeling would potentially explain a greater proportion of the observed variability in bloom timing and provide more nuanced insights into the complex biological mechanisms governing cherry blossom phenology. Lastly, future research could benefit from expanding the geographical scope beyond Kyoto to establish comparative phenological datasets across diverse microclimates and latitudinal gradients throughout Japan and other regions where cherry trees are important. This expanded spatial analysis would facilitate the identification of region-specific responses to climate variables and potentially isolate genetic adaptations to local environmental conditions.
