@@ -475,12 +475,51 @@ The independent variable, which interacts with the slope coefficient β₁, Marc
 ## Results
 
 ```{python}
-with open("model/ols.pkl", "rb") as ols:
+## Load the Pickled Models for faster visualizations
+with open("../model/ols.pkl", "rb") as ols:
     model_0 = pickle.load(ols)
 
-with open(model/ols_robust.pkl", "rb") as ols_robust:
+with open("../model/ols_robust.pkl", "rb") as ols_robust:
     model_1 = pickle.load(ols_robust)
 ```
+
+```{python}
+## Print nonrobust model summary
+print(model_0.summary())
+```
+
+```{python}
+## Print robust HC1 model summary
+print(model_1.summary())
+```
+
+```{python}
+## Visualizations
+# Scatterplot with regression line
+plt.figure(figsize=(10, 6))
+sns.regplot(x='march_temp_c', y='flower_doy', data=df, ci=None, line_kws={'color': 'red'})
+plt.text(0.1, 95, f"blooming_day = {model_0.params[1]:.2f} * temp + {model_0.params[0]:.2f}", color="red", fontsize=12)
+plt.title("Sakura Blooming Day vs March Temperature")
+plt.xlabel("March Avg Temperature (°C)")
+plt.ylabel("Blooming Day of Year (DoY)")
+plt.show()
+```
+
+```{python}
+# Scatterplot with year-based color gradient
+plt.figure(figsize=(10, 6))
+scatter = plt.scatter(df['march_temp_c'], df['flower_doy'], c=df['year'], cmap='viridis', s=60, edgecolor='k')
+plt.plot(X['march_temp_c'], model_0.predict(X), color='red', label='OLS Fit')
+plt.text(-0.2, 95, f"blooming_day = {model_0.params[1]:.2f} * temp + {model_0.params[0]:.2f}", color="red", fontsize=12)
+plt.colorbar(scatter, label='Year')
+plt.title("Sakura Blooming DoY vs March Temperature with Year Gradient")
+plt.xlabel("March Avg Temperature (°C)")
+plt.ylabel("Blooming Day of Year (DoY)")
+plt.legend()
+plt.show()
+```
+
+
 
 # Discussion {#sec-discussion}
 
