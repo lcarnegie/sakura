@@ -7,9 +7,7 @@ author:
     - Russell Luchin
     - Randall Ni
 abstract:
-    This is the abstract of your paper. Write a brief summary of your research,
-    including your objectives, methods, key results, and main conclusions.
-    Keep it concise but informative.
+    This paper examines the relationship between temperature and cherry blossom (sakura) flowering dates in Kyoto, Japan, analyzing a comprehensive dataset spanning nearly 1200 years from 812 CE to present day. While previous research has focused on shorter timeframes, this analysis integrates historical records compiled by Aono (2010) with contemporary Japanese Meteorological Agency data to better understand how climate change affects the timing of this culturally significant phenomenon. By modeling flowering day as a function of mean March temperatures, we identify significant trends that have implications for the traditional practice of hanami (flower-viewing) and local ecosystems. Our findings demonstrate the need for cultural adaptation to shifting bloom schedules and highlight the importance of extensive historical climate data in developing accurate predictive models for natural phenomena affected by global warming.
 format:
     pdf:
         documentclass: article
@@ -223,8 +221,8 @@ ax2.set_ylabel('Approximate Date', color='#4BA3C3')
 plt.title('Cherry Blossom Flowering Day Throughout History', fontsize=14)
 plt.xlabel('Year')
 plt.ylabel('Day of Year (DOY)')
-plt.grid(True, alpha=0.3)
 plt.legend()
+plt.grid(True, alpha=0.3)
 plt.tight_layout()
 ```
 
