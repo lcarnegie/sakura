@@ -43,6 +43,8 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.ticker import MaxNLocator
 from datetime import datetime
+import pickle
+import os
 
 # Load the historical data
 historic_bloom = pd.read_csv("../data/analysis_data/historic_bloom.csv")
@@ -446,9 +448,39 @@ Exploring the data collected in the last 60 years has highlighted it's similarit
 
 # Modeling {#sec-model}
 
+After exploring our data, we first considered a wide variety of models to engage with before settling on using an OLS model to best interpret the data.
+
+Initially, we considered a Cox Proportional Hazards model, which was inspired by similar applications of a Bayesian Survival model in @Allen2014. While this model seemed promising at first, there were a variety of challenges. While this model excels in handling censored data, it is less appropriate for datasets with structurally missing or entirely unrecorded entries, which characterized a large proportion of our historical data. Furthermore, the interpretive framework of the Cox Regression, which was centered around hazard ratios and survival probabilities, did not necessarily align with the explanatory goals we had in mind for this paper.
+
+We also evaluated the possibility of using a Poisson regression model. However, the dependent variable (the day of year of sakura blooming) exhibited overdispersion during modelling, and was also normally distributed. This violates many of the core assumptions required to produce a proper interpretation from the Poisson model, rendering it statistically unsuitable for our purposes.
+
+Ultimately, we narrowed between two candidates: the Ordinary Least Squares regression and a Regression Tree model. Given the structure of our dataset and the importance of interpretability, we selected the OLS model as our primary analytical tool. It’s coefficient-based output allowed us to quantify, interpret, and properly follow the effect of temperature and blooming times in a straightforward 
+
 ## Model Specification
 
+We are interested in investigating the relationship between sakura blooming times and the average temperature in March of the given year. The independent variable will be that of the temperature, with the dependent/responding variable being the time of blooming.
+
+The aim of computing this OLS regression model is to estimate an equation for a line with the coefficient B1 so that the difference (error) between the predicted line and the data points are minimized. By doing this, we get an equation for a line that best fits the data, allowing for the estimation of blooming dates given the average March temperatures in a given year. With the OLS regression, we will determine and predict one single outcome variable. 
+
+The equation for our linear model is written as:
+
+\begin{center}
+\text{Blooming\_DoY}_i = \beta_0 + \beta_1 \cdot \text{March\_Temp}_i + \varepsilon_i
+\end{center}
+
+The dependent variable Blooming Day (DOY) represents the blooming days of Sakuras in the given year, which is measured from 0 to 365 to denote how many days of the year has passed until blooming.
+
+The independent variable, which interacts with the slope coefficient β₁, March Temperature denotes the March Temperature of the given year, which is measured in celsius. 
+
 ## Results
+
+```{python}
+with open("model/ols.pkl", "rb") as ols:
+    model_0 = pickle.load(ols)
+
+with open(model/ols_robust.pkl", "rb") as ols_robust:
+    model_1 = pickle.load(ols_robust)
+```
 
 # Discussion {#sec-discussion}
 
