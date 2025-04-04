@@ -556,6 +556,114 @@ plt.legend()
 plt.show()
 ```
 
+```{python}
+#| label: fig-train-plt
+#| fig-cap: "Trained Predictions Visualization"
+# Test OLS model (nonrobust)
+model_test = model_0
+
+# Prepare test data
+X_test = sm.add_constant(test_df['march_temp_c'])
+y_test = test_df['flower_doy']
+
+# Predict on test data
+y_pred = model_test.predict(X_test)
+
+# Evaluation metrics
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+mae = mean_absolute_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+
+# Plot actual vs predicted
+plt.figure(figsize=(10, 6))
+plt.plot(test_df['year'], y_test, label='Actual Blooming DoY', marker='o')
+plt.plot(test_df['year'], y_pred, label='Predicted Blooming DoY', marker='x')
+plt.xlabel("Year")
+plt.ylabel("Blooming Day of Year")
+plt.title("Actual vs Predicted Sakura Blooming (2001–2019)")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Evaluation metrics print
+print("Evaluation on Test Set (2001–2019):")
+print(f"RMSE: {rmse:.2f}")
+print(f"MAE:  {mae:.2f}")
+print(f"R²:   {r2:.3f}")
+```
+
+```{python}
+#| label: fig-diag-results
+#| fig-cap: "Diagnostic Results for Cherry Blossom Flowering Day vs. March Temperature"
+
+# Create diagnostic plots for the OLS model
+fig = plt.figure(figsize=(20, 15))
+
+# Residual vs Fitted Plot
+ax1 = fig.add_subplot(2, 2, 1)
+residuals = model_0.resid
+fitted = model_0.fittedvalues
+sns.residplot(x=fitted, y=residuals, lowess=True, scatter_kws={'alpha': 0.5}, line_kws={'color': 'red', 'lw': 1}, ax=ax1)
+ax1.set_title('Residuals vs Fitted')
+ax1.set_xlabel('Fitted values')
+ax1.set_ylabel('Residuals')
+ax1.axhline(y=0, color='k', linestyle='-', alpha=0.3)
+
+# QQ Plot for Normality
+ax2 = fig.add_subplot(2, 2, 2)
+qqplot(model_0.resid, line='s', ax=ax2)
+ax2.set_title('Normal Q-Q')
+ax2.set_xlabel('Theoretical Quantiles')
+ax2.set_ylabel('Standardized Residuals')
+
+# Scale-Location Plot (Square root of absolute residuals vs fitted)
+ax3 = fig.add_subplot(2, 2, 3)
+sqrt_abs_resid = np.sqrt(np.abs(residuals))
+sns.regplot(x=fitted, y=sqrt_abs_resid, lowess=True, scatter_kws={'alpha': 0.5}, line_kws={'color': 'red', 'lw': 1}, ax=ax3)
+ax3.set_title('Scale-Location')
+ax3.set_xlabel('Fitted values')
+ax3.set_ylabel('$\\sqrt{|Standardized Residuals|}$')
+
+plt.tight_layout()
+
+# Leverage vs. Standardized Residuals
+ax4 = fig.add_subplot(2, 2, 4)
+infl = model_0.get_influence()
+hatvals = infl.hat_matrix_diag
+stud_resid = infl.resid_studentized_external
+
+# Determine leverage threshold
+p = len(model_0.params)  # number of parameters
+leverage_threshold = 2 * p / len(hatvals)
+
+# Plot points
+ax4.scatter(hatvals, stud_resid, alpha=0.6)
+ax4.axhline(y=0, color='k', linestyle='-', alpha=0.3)
+
+# Add reference lines
+ax4.axhline(y=2, color='g', linestyle='--', label='Std. Residuals = 2')
+ax4.axhline(y=-2, color='g', linestyle='--')
+ax4.axvline(x=leverage_threshold, color='b', linestyle='--', 
+           label=f'Leverage threshold ({leverage_threshold:.3f})')
+
+# Highlight and label influential points (leverage > threshold or std. residuals > 2)
+influential_points = []
+for i in range(len(hatvals)):
+    if (abs(stud_resid[i]) > 2) or (hatvals[i] > leverage_threshold):
+        ax4.text(hatvals[i], stud_resid[i], 
+                f" {i} ({hatvals[i]:.3f}, {stud_resid[i]:.2f})", 
+                fontsize=9, color="red")
+        influential_points.append(i)
+
+ax4.set_title('Leverage vs. Standardized Residuals')
+ax4.set_xlabel('Leverage (hat values)')
+ax4.set_ylabel('Studentized Residuals')
+ax4.legend(loc='upper right', fontsize=8)
+
+plt.tight_layout()
+plt.show()
+```
 
 
 # Discussion {#sec-discussion}
