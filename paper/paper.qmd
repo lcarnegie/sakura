@@ -476,11 +476,11 @@ $$
 \text{Blooming\_DoY}_i = \beta_0 + \beta_1 \cdot \text{March\_Temp}_i + \varepsilon_i
 $$
 
+\newpage
+
 The dependent variable Blooming Day represents the blooming day of a Kyoto cherry blossoms in a given year. It is measured in days after January 1 of a given year. 
 
 The independent variable March Temperature, described by the slope coefficient $\beta_1$, denotes the mean March temperature of the given year, which is measured in celsius. 
-
-\newpage
 
 ## Results
 
@@ -525,11 +525,15 @@ results_table = summary_col([model_0, model_1],
 display(results_table)
 ```
 
-The regression analysis in @tbl-reg-results reveals a significant inverse relationship between March temperature and cherry blossom blooming dates. For each 1°C increase in March temperature, cherry blossoms bloom approximately 2.25 days earlier (p < 0.01). This relationship remains consistent across both standard and robust OLS models, though the latter shows larger standard errors, suggesting heteroscedasticity in the data. With an R-squared of 0.32, March temperature appears to explain about one-third of the variation in blooming dates. When March temperature is 0°C, blossoms are predicted to emerge on the 88th day of the year (late March). These findings indicate that spring temperature serves as a meaningful predictor of cherry blossom phenology.
+The regression analysis in @tbl-reg-results reveals a significant inverse relationship between March temperature and cherry blossom blooming dates. For each 1°C increase in March temperature, cherry blossoms bloom approximately 2.25 days earlier (p < 0.01). This relationship remains consistent across both standard and robust OLS models, though the latter shows larger standard errors, suggesting heteroscedasticity in the data. With an R-squared of 0.32, March temperature appears to explain about one-third of the variation in blooming dates. When March temperature is 0°C, blossoms are predicted to emerge on the 88th day of the year (late March). These findings indicate that spring temperature serves as a meaningful predictor of cherry blossom phenology. Diagnostic plots are in @sec-appendix-1
 
 ```{python}
 #| label: fig-reg-plt 
 #| fig-cap: "Regression Visualization"
+#| message: false
+#| echo: false
+#| warning: false
+#| fig-align: center
 
 # Simple scatterplot with regression line
 plt.figure(figsize=(8, 4))
@@ -543,23 +547,15 @@ plt.show()
 ```
 
 ```{python}
-# Scatterplot with year-based color gradient
-plt.figure(figsize=(10, 6))
-scatter = plt.scatter(df['march_temp_c'], df['flower_doy'], c=df['year'], cmap='viridis', s=60, edgecolor='k')
-plt.plot(X['march_temp_c'], model_0.predict(X), color='red', label='OLS Fit')
-plt.text(-0.2, 95, f"blooming_day = {model_0.params[1]:.2f} * temp + {model_0.params[0]:.2f}", color="red", fontsize=12)
-plt.colorbar(scatter, label='Year')
-plt.title("Sakura Blooming DoY vs March Temperature with Year Gradient")
-plt.xlabel("March Avg Temperature (°C)")
-plt.ylabel("Blooming Day of Year (DoY)")
-plt.legend()
-plt.show()
-```
-
-```{python}
 #| label: fig-train-plt
 #| fig-cap: "Trained Predictions Visualization"
+#| message: false
+#| echo: false
+#| warning: false
+#| fig-align: center
+
 # Test OLS model (nonrobust)
+
 model_test = model_0
 
 # Prepare test data
@@ -568,12 +564,6 @@ y_test = test_df['flower_doy']
 
 # Predict on test data
 y_pred = model_test.predict(X_test)
-
-# Evaluation metrics
-rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-mae = mean_absolute_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
-
 
 # Plot actual vs predicted
 plt.figure(figsize=(10, 6))
@@ -584,87 +574,9 @@ plt.ylabel("Blooming Day of Year")
 plt.title("Actual vs Predicted Sakura Blooming (2001–2019)")
 plt.legend()
 plt.grid(True)
-plt.show()
-
-# Evaluation metrics print
-print("Evaluation on Test Set (2001–2019):")
-print(f"RMSE: {rmse:.2f}")
-print(f"MAE:  {mae:.2f}")
-print(f"R²:   {r2:.3f}")
 ```
 
-```{python}
-#| label: fig-diag-results
-#| fig-cap: "Diagnostic Results for Cherry Blossom Flowering Day vs. March Temperature"
-
-# Create diagnostic plots for the OLS model
-fig = plt.figure(figsize=(20, 15))
-
-# Residual vs Fitted Plot
-ax1 = fig.add_subplot(2, 2, 1)
-residuals = model_0.resid
-fitted = model_0.fittedvalues
-sns.residplot(x=fitted, y=residuals, lowess=True, scatter_kws={'alpha': 0.5}, line_kws={'color': 'red', 'lw': 1}, ax=ax1)
-ax1.set_title('Residuals vs Fitted')
-ax1.set_xlabel('Fitted values')
-ax1.set_ylabel('Residuals')
-ax1.axhline(y=0, color='k', linestyle='-', alpha=0.3)
-
-# QQ Plot for Normality
-ax2 = fig.add_subplot(2, 2, 2)
-qqplot(model_0.resid, line='s', ax=ax2)
-ax2.set_title('Normal Q-Q')
-ax2.set_xlabel('Theoretical Quantiles')
-ax2.set_ylabel('Standardized Residuals')
-
-# Scale-Location Plot (Square root of absolute residuals vs fitted)
-ax3 = fig.add_subplot(2, 2, 3)
-sqrt_abs_resid = np.sqrt(np.abs(residuals))
-sns.regplot(x=fitted, y=sqrt_abs_resid, lowess=True, scatter_kws={'alpha': 0.5}, line_kws={'color': 'red', 'lw': 1}, ax=ax3)
-ax3.set_title('Scale-Location')
-ax3.set_xlabel('Fitted values')
-ax3.set_ylabel('$\\sqrt{|Standardized Residuals|}$')
-
-plt.tight_layout()
-
-# Leverage vs. Standardized Residuals
-ax4 = fig.add_subplot(2, 2, 4)
-infl = model_0.get_influence()
-hatvals = infl.hat_matrix_diag
-stud_resid = infl.resid_studentized_external
-
-# Determine leverage threshold
-p = len(model_0.params)  # number of parameters
-leverage_threshold = 2 * p / len(hatvals)
-
-# Plot points
-ax4.scatter(hatvals, stud_resid, alpha=0.6)
-ax4.axhline(y=0, color='k', linestyle='-', alpha=0.3)
-
-# Add reference lines
-ax4.axhline(y=2, color='g', linestyle='--', label='Std. Residuals = 2')
-ax4.axhline(y=-2, color='g', linestyle='--')
-ax4.axvline(x=leverage_threshold, color='b', linestyle='--', 
-           label=f'Leverage threshold ({leverage_threshold:.3f})')
-
-# Highlight and label influential points (leverage > threshold or std. residuals > 2)
-influential_points = []
-for i in range(len(hatvals)):
-    if (abs(stud_resid[i]) > 2) or (hatvals[i] > leverage_threshold):
-        ax4.text(hatvals[i], stud_resid[i], 
-                f" {i} ({hatvals[i]:.3f}, {stud_resid[i]:.2f})", 
-                fontsize=9, color="red")
-        influential_points.append(i)
-
-ax4.set_title('Leverage vs. Standardized Residuals')
-ax4.set_xlabel('Leverage (hat values)')
-ax4.set_ylabel('Studentized Residuals')
-ax4.legend(loc='upper right', fontsize=8)
-
-plt.tight_layout()
-plt.show()
-```
-
+\newpage
 
 # Discussion {#sec-discussion}
 
@@ -681,10 +593,10 @@ The observed advancement in sakura blooming could have cascading effects through
 The continued warming projected in climate models suggests that the trend toward earlier sakura flowering will likely accelerate in coming decades, potentially creating novel ecological communities as species respond differentially to changing conditions.
 
 ## Cultural Implications
-From a cultural perspective, the temporal shift in cherry blossom seasons need adjustments to traditional hanami celebrations and tourism schedules, which have historically been calibrated to conventional blooming periods. In addition, these modifications could impact cultural practices that have remained relatively consistent for centuries and negatively impact tourism economy that is built around it. 
+As established in @sec-lit-review, that tradition of Hanami is a staple in Japanese culture. Moreover, it has become a significant source of revenue for both the nation itself and the local communities which host associated festivals. Our findings reveal a significant relationship between pre-flowering temperatures and blooming dates, aligning closely with observed patterns with climate-change related temperature increases. As the Hanami/cherry blossom festivals draw significant international and domestic attention, the scheduling of these events must be exhaustive in order to facilitate them at the scale they reach (and continue to grow). While we don’t anticipate a significant disruption to the bloom itself, understanding when the bloom will start is critical to maintaining the economic momentum these festivals have demonstrated. Furthermore, cherry blossoms and the Hanami practice are significant beyond their economic benefits. Communities and citizens celebrate and find great meaning and importance in these practices. Understanding that the bloom may come earlier, and being able to plan for travel, accommodations, and individual scheduling is important to many people in Japan. We expect that, if temperatures continue to raise year over year, it may disrupt the lives/scheduling of communities in Japan which find great importance in observing cherry blossom blooming every year.
 
 ## Limitations
-We would like to address several methodological limiting factors. Firstly, our analysis relies predominantly on data from Kyoto, representing a geographically limited subset that may not comprehensively reflect sakura phenological patterns across Japan's diverse climate regions. Secondly, although we used a merged dataset spanning from 800 CE to 2019, there are significant data gaps/missing values where we have to drop during the cleaning & merging of the two dataset. In addition, a notable limitation is the historical dataset's reliability, as large portions comprise of reconstructed values derived from local linear regression models or originated from primary sources that lack rigorous academic verification protocols. This presents challenges for establishing data provenance and reliability in accordance with contemporary scientific standards. Lastly, while our findings highlight temperature as a statistically significant predictor of bloom timing, the single-variable approach inherently overlooks other potential ecological factors. Variables such as precipitation patterns, photoperiod fluctuations, soil conditions, and winter chilling requirements may also contribute significantly to the observed advancement in flowering dates. A more comprehensive multivariate model would potentially yield enhanced predictive capacity and ecological insights.
+There are several limitations to this analysis. First, our analysis relies predominantly on data from Kyoto, representing a geographically limited subset that may not comprehensively reflect sakura phenological patterns across Japan's diverse climate regions. Second, although we used a merged dataset spanning from 800 CE to 2019, there are significant data gaps/missing values where we have to drop during the cleaning & merging of the two dataset. In addition, a notable limitation is the historical dataset's reliability, as large portions comprise of reconstructed values derived from local linear regression models or originated from primary sources that lack rigorous academic verification protocols. This presents challenges for establishing data provenance and reliability in accordance with contemporary scientific standards. Lastly, while our findings highlight temperature as a statistically significant predictor of bloom timing, the single-variable approach inherently overlooks other potential ecological factors. Variables such as precipitation patterns, photoperiod fluctuations, soil conditions, and winter chilling requirements may also contribute significantly to the observed advancement in flowering dates. A more comprehensive multivariate model, comprising more reliable data would potentially yield enhanced predictive capacity and ecological insights.
 
 ## Future Research Directions
 For future research, we would like to establish regression tree models to enhance predictive capabilities regarding sakura phenological patterns. Unlike traditional linear models, regression trees offer robust forecasting mechanisms that can better accommodate complex interactions between variables, prioritizing predictive accuracy over interpretive simplicity. Next, we recommend adding in additional environmental parameters beyond temperature. Variables warranting investigation including but not limited to precipitation frequency and intensity, atmospheric humidity gradients, soil composition metrics, photoperiod fluctuations, and cumulative chilling units during dormancy periods. Such multidimensional modeling would potentially explain a greater proportion of the observed variability in bloom timing and provide more nuanced insights into the complex biological mechanisms governing cherry blossom phenology. Lastly, future research could benefit from expanding the geographical scope beyond Kyoto to establish comparative phenological datasets across diverse microclimates and latitudinal gradients throughout Japan and other regions where cherry trees are important. This expanded spatial analysis would facilitate the identification of region-specific responses to climate variables and potentially isolate genetic adaptations to local environmental conditions.
@@ -704,3 +616,133 @@ The Japanese tradition of *hanami*  is an important cultural tradition that hono
 \appendix
 
 # Appendix {#sec-appendix}
+
+## Diagnostic Plots for OLS Models {#sec-appendix-1}
+
+```{python}
+#| fig-cap: "Diagnostic Results for Cherry Blossom Flowering Day vs. March Temperature"
+#| message: false
+#| echo: false
+#| warning: false
+#| fig-align: center
+
+# Add necessary libraries for diagnostic plots
+import statsmodels.api as sm
+from statsmodels.graphics.gofplots import qqplot
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+# Create diagnostic plots for the OLS model
+fig = plt.figure(figsize=(20, 15))
+
+# Residual vs Fitted Plot
+ax = fig.add_subplot(1, 1, 1)
+residuals = model_0.resid
+fitted = model_0.fittedvalues
+sns.residplot(x=fitted, y=residuals, lowess=True, scatter_kws={'alpha': 0.5}, line_kws={'color': 'red', 'lw': 1}, ax=ax)
+ax.set_title('Residuals vs Fitted')
+ax.set_xlabel('Fitted values')
+ax.set_ylabel('Residuals')
+ax.axhline(y=0, color='k', linestyle='-', alpha=0.3)
+```
+
+```{python}
+#| message: false
+#| echo: false
+#| warning: false
+#| fig-align: center
+
+import statsmodels.api as sm
+from statsmodels.graphics.gofplots import qqplot
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+# Create diagnostic plots for the OLS model
+fig = plt.figure(figsize=(10, 8))
+ax = plt.subplot(111)
+
+# QQ Plot for Normality
+qqplot(model_0.resid, line='s', ax=ax)
+ax.set_title('Normal Q-Q')
+ax.set_xlabel('Theoretical Quantiles')
+ax.set_ylabel('Standardized Residuals')
+```
+
+```{python}
+#| message: false
+#| echo: false
+#| warning: false
+#| fig-align: center
+
+# Add necessary libraries for diagnostic plots
+import statsmodels.api as sm
+from statsmodels.graphics.gofplots import qqplot
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+# Create diagnostic plots for the OLS model
+fig = plt.figure(figsize=(10, 8))
+
+# Scale-Location Plot (Square root of absolute residuals vs fitted)
+ax = fig.add_subplot(2, 2, 3)
+sqrt_abs_resid = np.sqrt(np.abs(residuals))
+sns.regplot(x=fitted, y=sqrt_abs_resid, lowess=True, scatter_kws={'alpha': 0.5}, line_kws={'color': 'red', 'lw': 1}, ax=ax)
+ax.set_title('Scale-Location')
+ax.set_xlabel('Fitted values')
+ax.set_ylabel('$\\sqrt{|Standardized Residuals|}$')
+
+```
+
+```{python}
+#| message: false
+#| echo: false
+#| warning: false
+#| fig-align: center
+
+
+# Add necessary libraries for diagnostic plots
+import statsmodels.api as sm
+from statsmodels.graphics.gofplots import qqplot
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+# Leverage vs. Standardized Residuals
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(1, 1, 1)
+infl = model_0.get_influence()
+hatvals = infl.hat_matrix_diag
+stud_resid = infl.resid_studentized_external
+
+# Determine leverage threshold
+p = len(model_0.params)  # number of parameters
+leverage_threshold = 2 * p / len(hatvals)
+
+# Plot points
+ax.scatter(hatvals, stud_resid, alpha=0.6)
+ax.axhline(y=0, color='k', linestyle='-', alpha=0.3)
+
+# Add reference lines
+ax.axhline(y=2, color='g', linestyle='--', label='Std. Residuals = 2')
+ax.axhline(y=-2, color='g', linestyle='--')
+ax.axvline(x=leverage_threshold, color='b', linestyle='--', 
+           label=f'Leverage threshold ({leverage_threshold:.3f})')
+
+# Highlight and label influential points (leverage > threshold or std. residuals > 2)
+influential_points = []
+for i in range(len(hatvals)):
+    if (abs(stud_resid[i]) > 2) or (hatvals[i] > leverage_threshold):
+        ax.text(hatvals[i], stud_resid[i], 
+                f" {i} ({hatvals[i]:.3f}, {stud_resid[i]:.2f})", 
+                fontsize=9, color="red")
+        influential_points.append(i)
+
+ax.set_title('Leverage vs. Standardized Residuals')
+ax.set_xlabel('Leverage (hat values)')
+ax.set_ylabel('Studentized Residuals')
+ax.legend(loc='upper right', fontsize=8)
+plt.tight_layout()
+```
