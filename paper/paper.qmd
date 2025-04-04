@@ -525,7 +525,7 @@ results_table = summary_col([model_0, model_1],
 display(results_table)
 ```
 
-The regression analysis in @tbl-reg-results reveals a significant inverse relationship between March temperature and cherry blossom blooming dates. For each 1°C increase in March temperature, cherry blossoms bloom approximately 2.25 days earlier (p < 0.01). This relationship remains consistent across both standard and robust OLS models, though the latter shows larger standard errors, suggesting heteroscedasticity in the data. With an R-squared of 0.32, March temperature appears to explain about one-third of the variation in blooming dates. When March temperature is 0°C, blossoms are predicted to emerge on the 88th day of the year (late March). These findings indicate that spring temperature serves as a meaningful predictor of cherry blossom phenology. Diagnostic plots are in @sec-appendix-1
+The regression analysis in @tbl-reg-results, visualized in @fig-reg-plt, reveals a significant inverse relationship between March temperature and cherry blossom blooming dates. For each 1°C increase in March temperature, cherry blossoms bloom approximately 2.25 days earlier (p < 0.01). This relationship remains consistent across both standard and robust OLS models, though the latter shows larger standard errors, suggesting heteroscedasticity in the data. With an R-squared of 0.32, March temperature appears to explain about one-third of the variation in blooming dates. When March temperature is 0°C, blossoms are predicted to emerge on the 88th day of the year (late March). These findings indicate that spring temperature serves as a meaningful predictor of cherry blossom phenology. Diagnostic plots are in @sec-appendix-1
 
 ```{python}
 #| label: fig-reg-plt 
@@ -538,42 +538,15 @@ The regression analysis in @tbl-reg-results reveals a significant inverse relati
 # Simple scatterplot with regression line
 plt.figure(figsize=(8, 4))
 plt.scatter(df['march_temp_c'], df['flower_doy'], color='#FF9ECD', edgecolor='#E75480', alpha=0.7)
+
 plt.plot(sorted(df['march_temp_c']), model_0.predict(sm.add_constant(sorted(df['march_temp_c']))), color='red')
+
 plt.text(0.1, 95, f"blooming_day = {model_0.params[1]:.2f} * temp + {model_0.params[0]:.2f}", color="red", fontsize=12)
+
 plt.title("Sakura Blooming Day vs March Temperature")
 plt.xlabel("March Avg Temperature (°C)")
 plt.ylabel("Blooming Day of Year (DoY)")
 plt.show()
-```
-
-```{python}
-#| label: fig-train-plt
-#| fig-cap: "Trained Predictions Visualization"
-#| message: false
-#| echo: false
-#| warning: false
-#| fig-align: center
-
-# Test OLS model (nonrobust)
-
-model_test = model_0
-
-# Prepare test data
-X_test = sm.add_constant(test_df['march_temp_c'])
-y_test = test_df['flower_doy']
-
-# Predict on test data
-y_pred = model_test.predict(X_test)
-
-# Plot actual vs predicted
-plt.figure(figsize=(10, 6))
-plt.plot(test_df['year'], y_test, label='Actual Blooming DoY', marker='o')
-plt.plot(test_df['year'], y_pred, label='Predicted Blooming DoY', marker='x')
-plt.xlabel("Year")
-plt.ylabel("Blooming Day of Year")
-plt.title("Actual vs Predicted Sakura Blooming (2001–2019)")
-plt.legend()
-plt.grid(True)
 ```
 
 \newpage
@@ -616,6 +589,10 @@ The Japanese tradition of *hanami*  is an important cultural tradition that hono
 \appendix
 
 # Appendix {#sec-appendix}
+
+## Code for Plots
+
+The code used to render the plots and tables in this paper can be found at <https://github.com/lcarnegie/sakura/tree/main/scripts> 
 
 ## Diagnostic Plots for OLS Models {#sec-appendix-1}
 
