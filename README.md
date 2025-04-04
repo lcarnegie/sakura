@@ -1,4 +1,5 @@
-# Sakura Flowering: Understanding Temperature's Role in Cherry Blossom Blooming
+# Warming Degrees and Flowering Trees 
+Understanding Temperature's Role in Earlier Cherry Blossom Blooming Times in Kyoto, Japan
 
 ## Overview
 This project examines the relationship between temperature and cherry blossom (sakura) flowering dates in Kyoto, Japan, analyzing a comprehensive dataset spanning nearly 1200 years from 812 CE to the present day. By modeling flowering day as a function of mean March temperatures, we identify significant trends that have implications for both the traditional practice of hanami (flower-viewing) and local ecosystems. Our findings demonstrate the need for cultural adaptation to shifting bloom schedules due to climate change and highlight the importance of extensive historical climate data in developing accurate predictive models.
@@ -11,8 +12,8 @@ The repository is structured as follows:
 - `analysis_data` contains the processed datasets used for analysis
 - `raw_data` contains historical sakura blooming records and modern meteorological datasets
 cookson/ contains data compiled by Alex Cookson, including:
-    - cookson_cleaned_csvs/ with cleaned CSV files
-    - very_raw_data/ with original source files and cleaning scripts
+    - `cookson_cleaned_csvs/` with cleaned CSV files
+    - `very_raw_data/` with original source files and cleaning scripts
 - `paper` contains the main Quarto document (with final code), reference bibliography, and final PDF
 - `scripts` contains rough Python notebooks for data exploration, visualization, and modeling
 
