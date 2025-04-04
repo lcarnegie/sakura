@@ -529,25 +529,44 @@ plt.plot(sorted(df['march_temp_c']), model_0.predict(sm.add_constant(sorted(df['
 plt.text(0.1, 95, f"blooming_day = {model_0.params[1]:.2f} * temp + {model_0.params[0]:.2f}", color="red", fontsize=12)
 plt.title("Sakura Blooming Day vs March Temperature")
 plt.xlabel("March Avg Temperature (°C)")
-plt.ylabel("Blooming Day of Year")
-plt.grid(True, alpha=0.3)
+plt.ylabel("Blooming Day of Year (DoY)")
+plt.show()
 ```
+
+```{python}
+# Scatterplot with year-based color gradient
+plt.figure(figsize=(10, 6))
+scatter = plt.scatter(df['march_temp_c'], df['flower_doy'], c=df['year'], cmap='viridis', s=60, edgecolor='k')
+plt.plot(X['march_temp_c'], model_0.predict(X), color='red', label='OLS Fit')
+plt.text(-0.2, 95, f"blooming_day = {model_0.params[1]:.2f} * temp + {model_0.params[0]:.2f}", color="red", fontsize=12)
+plt.colorbar(scatter, label='Year')
+plt.title("Sakura Blooming DoY vs March Temperature with Year Gradient")
+plt.xlabel("March Avg Temperature (°C)")
+plt.ylabel("Blooming Day of Year (DoY)")
+plt.legend()
+plt.show()
+```
+
+
 
 # Discussion {#sec-discussion}
 
 ## Implications of Findings
-Our statistical analysis reveals a significant inverse relationship between pre-flowering March temperatures and sakura bloom dates, with higher temperatures consistently associated with earlier flowering time. This temperature-dependent pattern aligns with the documented global warming trend observed over recent centuries, particularly the accelerated temperature increase in the modern era.
-
-The predictive models generated through our research demonstrate robust statistical evidence that the progressive elevation of mean March temperatures, driven by global warming, will likely continue to advance cherry blossom flowering dates in coming decades. This phenological shift carries significant ecological, cultural, and economic implications. The alteration of these biorhythms may disrupt established ecological synchronizations between cherry trees and their pollinators, potentially affecting ecosystem functionality and biodiversity dynamics.
-
-From a cultural perspective, the temporal shift in cherry blossom seasons need adjustments to traditional hanami celebrations and tourism schedules, which have historically been calibrated to conventional blooming periods. In addition, these modifications could impact cultural practices that have remained relatively consistent for centuries and negatively impact tourism economy that is built around it. 
+Our statistical analysis reveals a significant inverse relationship between pre-flowering March temperatures and sakura bloom dates, with higher temperatures consistently associated with earlier flowering time. This temperature-dependent pattern aligns with the documented global warming trend observed over recent centuries, particularly the accelerated temperature increase in the modern era. The predictive models generated through our research demonstrate robust statistical evidence that the progressive elevation of mean March temperatures, driven by global warming, will likely continue to advance cherry blossom flowering dates in coming decades. Our findings corroborate the projections established by Allen et al. in their seminal work on phenological responses to climate change [@Allen2014]; their model, as discussed in our literature review, similarly predicted accelerated advancement of flowering dates under various warming scenarios, with comparable directional trends to those observed in our analysis. This convergence of independent methodological approaches strengthens the validity of both models and provides additional confirmation of the phenological impacts of climate alteration on various sakura species.
 
 ## Ecological Implications
+The observed advancement in sakura flowering dates correlates with increasing mean March temperatures in our analysis, highlighting a significant climate-driven phenological shift. This temperature-phenology relationship aligns with a growing body of research on plant responses to climate change. As @Rahimi2025 observed in their comprehensive analysis of pollinator-dependent crops across Asia, climate change is driving significant spatial and temporal shifts in biological systems, particularly affecting species interactions that depend on synchronized timing.
+
+The earlier flowering of sakura represents a classic example of phenological mismatch—where interacting species respond differently to climate cues, potentially disrupting ecological relationships. @Gerard2020 highlight that "many phenological shifts have already been reported at the species level for the insect emergence or blooming time of flowering plants", with temperature being the predominant driver. However, these shifts are rarely uniform across different ecological levels, creating potential desynchronization between plants and their pollinators or other dependent species.
+
+The observed advancement in sakura blooming could have cascading effects throughout Japanese ecosystems. As @Rahimi2025 identified in their spatial mismatch analysis, when flowering phenology changes, it can disrupt the "critical synchronizations" between flowers and their respective pollinators, potentially affecting ecosystem functionality and biodiversity dynamics. In addition, not limited to spatial mismatch, Rahimi and Jung argue that temporal mismatch is also possible in the future. It will occur when the "flowering periods of plants and the activity periods of their pollinators are no longer synchronized", reducing pollination efficiency and crop yields. This phenomenon will be a likely future if global warming continues to worsen and average March temperature steadily increases.
+
+The continued warming projected in climate models suggests that the trend toward earlier sakura flowering will likely accelerate in coming decades, potentially creating novel ecological communities as species respond differentially to changing conditions.
 
 ## Cultural Implications
+From a cultural perspective, the temporal shift in cherry blossom seasons need adjustments to traditional hanami celebrations and tourism schedules, which have historically been calibrated to conventional blooming periods. In addition, these modifications could impact cultural practices that have remained relatively consistent for centuries and negatively impact tourism economy that is built around it. 
 
 ## Limitations
-
 We would like to address several methodological limiting factors. Firstly, our analysis relies predominantly on data from Kyoto, representing a geographically limited subset that may not comprehensively reflect sakura phenological patterns across Japan's diverse climate regions. Secondly, although we used a merged dataset spanning from 800 CE to 2019, there are significant data gaps/missing values where we have to drop during the cleaning & merging of the two dataset. In addition, a notable limitation is the historical dataset's reliability, as large portions comprise of reconstructed values derived from local linear regression models or originated from primary sources that lack rigorous academic verification protocols. This presents challenges for establishing data provenance and reliability in accordance with contemporary scientific standards. Lastly, while our findings highlight temperature as a statistically significant predictor of bloom timing, the single-variable approach inherently overlooks other potential ecological factors. Variables such as precipitation patterns, photoperiod fluctuations, soil conditions, and winter chilling requirements may also contribute significantly to the observed advancement in flowering dates. A more comprehensive multivariate model would potentially yield enhanced predictive capacity and ecological insights.
 
 ## Future Research Directions
