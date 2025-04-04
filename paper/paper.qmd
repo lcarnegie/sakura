@@ -45,6 +45,7 @@ from matplotlib.ticker import MaxNLocator
 from datetime import datetime
 import pickle
 import os
+from statsmodels.iolib.summary2 import summary_col
 
 # Load the historical data
 historic_bloom = pd.read_csv("../data/analysis_data/historic_bloom.csv")
@@ -448,38 +449,88 @@ Exploring the data collected in the last 60 years has highlighted it's similarit
 
 # Modeling {#sec-model}
 
-After exploring our data, we first considered a wide variety of models to engage with before settling on using an OLS model to best interpret the data.
+After data exploration, various modeling approaches were considered before selecting OLS regression as the most appropriate method. We were interested in investigating the relationship between sakura blooming times and the average temperature in March of the given year. The independent variable will be that of the temperature, with the dependent/responding variable being the time of blooming.
 
-Initially, we considered a Cox Proportional Hazards model, which was inspired by similar applications of a Bayesian Survival model in @Allen2014. While this model seemed promising at first, there were a variety of challenges. While this model excels in handling censored data, it is less appropriate for datasets with structurally missing or entirely unrecorded entries, which characterized a large proportion of our historical data. Furthermore, the interpretive framework of the Cox Regression, which was centered around hazard ratios and survival probabilities, did not necessarily align with the explanatory goals we had in mind for this paper.
+A Cox Proportional Hazards model was initially evaluated, inspired by the Bayesian Survival model used in @Allen2014. This approach was deemed unsuitable due to its emphasis on censored data rather than structurally missing entries which characterized much of the historical dataset. Additionally, the interpretive framework of hazard ratios and survival probabilities was not aligned with the explanatory objectives of this analysis.
 
-We also evaluated the possibility of using a Poisson regression model. However, the dependent variable (the day of year of sakura blooming) exhibited overdispersion during modelling, and was also normally distributed. This violates many of the core assumptions required to produce a proper interpretation from the Poisson model, rendering it statistically unsuitable for our purposes.
+Poisson regression was also assessed but rejected due to overdispersion in the dependent variable (day of year of sakura blooming) and its normal distribution, which violated key assumptions required for proper model interpretation.
 
-Ultimately, we narrowed between two candidates: the Ordinary Least Squares regression and a Regression Tree model. Given the structure of our dataset and the importance of interpretability, we selected the OLS model as our primary analytical tool. It’s coefficient-based output allowed us to quantify, interpret, and properly follow the effect of temperature and blooming times in a straightforward 
+The final consideration was between Ordinary Least Squares regression and Regression Tree models. OLS regression was ultimately selected based on the dataset structure and need for interpretability. Its coefficient-based output allowed for straightforward quantification and interpretation of the relationship between temperature and blooming times.
 
 ## Model Specification
 
-We are interested in investigating the relationship between sakura blooming times and the average temperature in March of the given year. The independent variable will be that of the temperature, with the dependent/responding variable being the time of blooming.
-
-The aim of computing this OLS regression model is to estimate an equation for a line with the coefficient B1 so that the difference (error) between the predicted line and the data points are minimized. By doing this, we get an equation for a line that best fits the data, allowing for the estimation of blooming dates given the average March temperatures in a given year. With the OLS regression, we will determine and predict one single outcome variable. 
+The aim of computing this OLS regression model is to estimate an equation for a line with the coefficients β so that the differences (errors) between the predicted line and the data points are minimized. By doing this, we get an equation for a line that best fits the data, allowing for the estimation of blooming dates given the average March temperatures in a given year. With the OLS regression, we will determine and predict one single outcome variable, blooming day.
 
 The equation for our linear model is written as:
 
-\begin{center}
+$$
 \text{Blooming\_DoY}_i = \beta_0 + \beta_1 \cdot \text{March\_Temp}_i + \varepsilon_i
-\end{center}
+$$
 
-The dependent variable Blooming Day (DOY) represents the blooming days of Sakuras in the given year, which is measured from 0 to 365 to denote how many days of the year has passed until blooming.
+The dependent variable Blooming Day represents the blooming day of a Kyoto cherry blossoms in a given year. It is measured in days after January 1 of a given year. 
 
-The independent variable, which interacts with the slope coefficient β₁, March Temperature denotes the March Temperature of the given year, which is measured in celsius. 
+The independent variable March Temperature, described by the slope coefficient $\beta_1$, denotes the mean March temperature of the given year, which is measured in celsius. 
+
+\newpage
 
 ## Results
 
 ```{python}
-with open("model/ols.pkl", "rb") as ols:
-    model_0 = pickle.load(ols)
+# Load dataset
+df = modern_bloom
 
-with open(model/ols_robust.pkl", "rb") as ols_robust:
-    model_1 = pickle.load(ols_robust)
+# Rename columns for clarity
+df.columns = ['year', 'flower_date', 'flower_doy', 'march_temp_c']
+
+# Split into training (1953–2000) and testing (2010–2019)
+train_df = df[df['year'] <= 2000]
+test_df = df[(df['year'] >= 2009) & (df['year'] <= 2019)]
+
+# Define X and y
+X = sm.add_constant(train_df['march_temp_c'])  # Add intercept
+y = train_df['flower_doy']
+
+# Fit model 1
+model_0 = sm.OLS(y, X).fit()
+
+# Fit model 2 (with robust standard errors)
+model_1 = sm.OLS(y, X).fit(cov_type='HC1')
+
+```
+
+```{python}
+#| label: tbl-reg-results
+#| tbl-cap: "Regression Results for Cherry Blossom Flowering Day vs. March Temperature"
+#| message: false
+#| echo: false
+#| warning: false
+#| fig-align: center
+
+# Extract model results in a cleaner format
+results_table = summary_col([model_0, model_1], 
+                          model_names=["Standard OLS", "Robust OLS"],
+                          float_format='%0.3f',
+                          info_dict={'N':lambda x: "{0:d}".format(int(x.nobs)),
+                                    'R2':lambda x: "{:.3f}".format(x.rsquared)})
+# Display the table
+display(results_table)
+```
+
+The regression analysis in @tbl-reg-results reveals a significant inverse relationship between March temperature and cherry blossom blooming dates. For each 1°C increase in March temperature, cherry blossoms bloom approximately 2.25 days earlier (p < 0.01). This relationship remains consistent across both standard and robust OLS models, though the latter shows larger standard errors, suggesting heteroscedasticity in the data. With an R-squared of 0.32, March temperature appears to explain about one-third of the variation in blooming dates. When March temperature is 0°C, blossoms are predicted to emerge on the 88th day of the year (late March). These findings indicate that spring temperature serves as a meaningful predictor of cherry blossom phenology.
+
+```{python}
+#| label: fig-reg-plt 
+#| fig-cap: "Regression Visualization"
+
+# Simple scatterplot with regression line
+plt.figure(figsize=(8, 4))
+plt.scatter(df['march_temp_c'], df['flower_doy'], color='#FF9ECD', edgecolor='#E75480', alpha=0.7)
+plt.plot(sorted(df['march_temp_c']), model_0.predict(sm.add_constant(sorted(df['march_temp_c']))), color='red')
+plt.text(0.1, 95, f"blooming_day = {model_0.params[1]:.2f} * temp + {model_0.params[0]:.2f}", color="red", fontsize=12)
+plt.title("Sakura Blooming Day vs March Temperature")
+plt.xlabel("March Avg Temperature (°C)")
+plt.ylabel("Blooming Day of Year")
+plt.grid(True, alpha=0.3)
 ```
 
 # Discussion {#sec-discussion}
@@ -505,7 +556,8 @@ For future research, we would like to establish regression tree models to enhanc
 ## Conclusion
 The Japanese tradition of *hanami*  is an important cultural tradition that honors the cycle of life and death. However, rising global temperatures have created an anomaly in recent years, highlighting the need to understand the historical and modern links between temperature and cherry blossom bloom timing. By exploring and modelling this data, we began to understand the quantitative relationships between temperature and blooming day, which allowed us to come to several conclusions. First, changes in temperature will have consequential effects for wildlife that function around the timing of blooming *sakura*. Next, the timing of celebrations such as *hanami* will be impacted by temperature changes, necessitating flexibility in honouring this tradition. Finally, there is a need for more a more comprehensive inquiry into the determinants of cherry blossom blooming, beyond solely the locale of Kyoto. This is so that more robust predictions of *sakura* blooming in Kyoto can be made. By gathering more data and make better predictions, the city of Kyoto will better be able to weather climate change and bridge their cherished traditions into the future. 
 
-
 # References
+
+\newpage 
 
 # Appendix {#sec-appendix}

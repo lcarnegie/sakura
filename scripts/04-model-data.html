@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.538">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Modelling with Outlier</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="04-model-data_files/libs/clipboard/clipboard.min.js"></script>
+<script src="04-model-data_files/libs/quarto-html/quarto.js"></script>
+<script src="04-model-data_files/libs/quarto-html/popper.min.js"></script>
+<script src="04-model-data_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="04-model-data_files/libs/quarto-html/anchor.min.js"></script>
+<link href="04-model-data_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="04-model-data_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="04-model-data_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="04-model-data_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="04-model-data_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Modelling with Outlier</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="cell-0" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ============= PREAMBLE =============</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Last Edited By: Luca Carnegie and Chris Lu</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Date: April 03, 2025</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Description: OLS Modelling Work for Modern Bloom Data</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ====================================</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Package setup</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.graphics.gofplots <span class="im">import</span> qqplot</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_squared_error, mean_absolute_error, r2_score</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.formula.api <span class="im">as</span> smf</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Load dataset</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="st">"../data/analysis_data/modern_bloom.csv"</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Rename columns for clarity</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>df.columns <span class="op">=</span> [<span class="st">'year'</span>, <span class="st">'flower_date'</span>, <span class="st">'flower_doy'</span>, <span class="st">'march_temp_c'</span>]</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Split into training (1953–2000) and testing (2010–2019)</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>train_df <span class="op">=</span> df[df[<span class="st">'year'</span>] <span class="op">&lt;=</span> <span class="dv">2000</span>]</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>test_df <span class="op">=</span> df[(df[<span class="st">'year'</span>] <span class="op">&gt;=</span> <span class="dv">2009</span>) <span class="op">&amp;</span> (df[<span class="st">'year'</span>] <span class="op">&lt;=</span> <span class="dv">2019</span>)]</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Define X and y</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> sm.add_constant(train_df[<span class="st">'march_temp_c'</span>])  <span class="co"># Add intercept</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> train_df[<span class="st">'flower_doy'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="modelling-with-outlier" class="level3">
+<h3 class="anchored" data-anchor-id="modelling-with-outlier">Modelling with Outlier</h3>
+<div id="cell-2" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the OLS model</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>model_0 <span class="op">=</span> sm.OLS(y, X).fit()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Save Summary for Pickling</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>os.makedirs(<span class="st">"model"</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"../model/ols.pkl"</span>, <span class="st">"wb"</span>) <span class="im">as</span> ols:</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    pickle.dump(model_0, ols)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Output summary</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model_0.summary())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             flower_doy   R-squared:                       0.320
+Model:                            OLS   Adj. R-squared:                  0.305
+Method:                 Least Squares   F-statistic:                     21.65
+Date:                Thu, 03 Apr 2025   Prob (F-statistic):           2.79e-05
+Time:                        01:03:33   Log-Likelihood:                -133.72
+No. Observations:                  48   AIC:                             271.4
+Df Residuals:                      46   BIC:                             275.2
+Df Model:                           1                                         
+Covariance Type:            nonrobust                                         
+================================================================================
+                   coef    std err          t      P&gt;|t|      [0.025      0.975]
+--------------------------------------------------------------------------------
+const           87.5591      0.901     97.226      0.000      85.746      89.372
+march_temp_c    -2.2538      0.484     -4.653      0.000      -3.229      -1.279
+==============================================================================
+Omnibus:                        0.242   Durbin-Watson:                   1.739
+Prob(Omnibus):                  0.886   Jarque-Bera (JB):                0.361
+Skew:                           0.152   Prob(JB):                        0.835
+Kurtosis:                       2.702   Cond. No.                         3.44
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.</code></pre>
+</div>
+</div>
+<div id="cell-3" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Modelling with Robust HC1 SE</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit OLS model with robust standard errors</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>model_1 <span class="op">=</span> sm.OLS(y, X).fit(cov_type<span class="op">=</span><span class="st">'HC1'</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Save Summary for Pickling</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>os.makedirs(<span class="st">"model"</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">"../model/ols_robust.pkl"</span>, <span class="st">"wb"</span>) <span class="im">as</span> ols_robust:</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    pickle.dump(model_1, ols_robust)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Output the summary</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model_1.summary())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             flower_doy   R-squared:                       0.320
+Model:                            OLS   Adj. R-squared:                  0.305
+Method:                 Least Squares   F-statistic:                     11.83
+Date:                Thu, 03 Apr 2025   Prob (F-statistic):            0.00125
+Time:                        01:03:34   Log-Likelihood:                -133.72
+No. Observations:                  48   AIC:                             271.4
+Df Residuals:                      46   BIC:                             275.2
+Df Model:                           1                                         
+Covariance Type:                  HC1                                         
+================================================================================
+                   coef    std err          z      P&gt;|z|      [0.025      0.975]
+--------------------------------------------------------------------------------
+const           87.5591      1.194     73.361      0.000      85.220      89.898
+march_temp_c    -2.2538      0.655     -3.440      0.001      -3.538      -0.970
+==============================================================================
+Omnibus:                        0.242   Durbin-Watson:                   1.739
+Prob(Omnibus):                  0.886   Jarque-Bera (JB):                0.361
+Skew:                           0.152   Prob(JB):                        0.835
+Kurtosis:                       2.702   Cond. No.                         3.44
+==============================================================================
+
+Notes:
+[1] Standard Errors are heteroscedasticity robust (HC1)</code></pre>
+</div>
+</div>
+<div id="cell-4" class="cell" data-execution_count="37">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">## Visualizations</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot with regression line</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>sns.regplot(x<span class="op">=</span><span class="st">'march_temp_c'</span>, y<span class="op">=</span><span class="st">'flower_doy'</span>, data<span class="op">=</span>df, ci<span class="op">=</span><span class="va">None</span>, line_kws<span class="op">=</span>{<span class="st">'color'</span>: <span class="st">'red'</span>})</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>plt.text(<span class="fl">0.1</span>, <span class="dv">95</span>, <span class="ss">f"blooming_day = </span><span class="sc">{</span>model_0<span class="sc">.</span>params[<span class="dv">1</span>]<span class="sc">:.2f}</span><span class="ss"> * temp + </span><span class="sc">{</span>model_0<span class="sc">.</span>params[<span class="dv">0</span>]<span class="sc">:.2f}</span><span class="ss">"</span>, color<span class="op">=</span><span class="st">"red"</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Sakura Blooming Day vs March Temperature"</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"March Avg Temperature (°C)"</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Blooming Day of Year (DoY)"</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot with year-based color gradient</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>scatter <span class="op">=</span> plt.scatter(df[<span class="st">'march_temp_c'</span>], df[<span class="st">'flower_doy'</span>], c<span class="op">=</span>df[<span class="st">'year'</span>], cmap<span class="op">=</span><span class="st">'viridis'</span>, s<span class="op">=</span><span class="dv">60</span>, edgecolor<span class="op">=</span><span class="st">'k'</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>plt.plot(X[<span class="st">'march_temp_c'</span>], model_0.predict(X), color<span class="op">=</span><span class="st">'red'</span>, label<span class="op">=</span><span class="st">'OLS Fit'</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>plt.text(<span class="op">-</span><span class="fl">0.2</span>, <span class="dv">95</span>, <span class="ss">f"blooming_day = </span><span class="sc">{</span>model_0<span class="sc">.</span>params[<span class="dv">1</span>]<span class="sc">:.2f}</span><span class="ss"> * temp + </span><span class="sc">{</span>model_0<span class="sc">.</span>params[<span class="dv">0</span>]<span class="sc">:.2f}</span><span class="ss">"</span>, color<span class="op">=</span><span class="st">"red"</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>plt.colorbar(scatter, label<span class="op">=</span><span class="st">'Year'</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Sakura Blooming DoY vs March Temperature with Year Gradient"</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"March Avg Temperature (°C)"</span>)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Blooming Day of Year (DoY)"</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>C:\Users\Chris Lu\AppData\Local\Temp\ipykernel_142868\3426368552.py:5: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  plt.text(0.1, 95, f"blooming_day = {model_0.params[1]:.2f} * temp + {model_0.params[0]:.2f}", color="red", fontsize=12)
+C:\Users\Chris Lu\AppData\Local\Temp\ipykernel_142868\3426368552.py:15: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  plt.text(-0.2, 95, f"blooming_day = {model_0.params[1]:.2f} * temp + {model_0.params[0]:.2f}", color="red", fontsize=12)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-model-data_files/figure-html/cell-5-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-model-data_files/figure-html/cell-5-output-3.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="test-model" class="level4">
+<h4 class="anchored" data-anchor-id="test-model">Test Model</h4>
+<div id="cell-6" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">##Modelling Training Dataset</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Test OLS model (nonrobust)</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>model_test <span class="op">=</span> model_0</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare test data</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>X_test <span class="op">=</span> sm.add_constant(test_df[<span class="st">'march_temp_c'</span>])</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>y_test <span class="op">=</span> test_df[<span class="st">'flower_doy'</span>]</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict on test data</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> model_test.predict(X_test)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluation metrics</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>rmse <span class="op">=</span> np.sqrt(mean_squared_error(y_test, y_pred))</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>mae <span class="op">=</span> mean_absolute_error(y_test, y_pred)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>r2 <span class="op">=</span> r2_score(y_test, y_pred)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Evaluation on Test Set (2001–2019):"</span>)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"RMSE: </span><span class="sc">{</span>rmse<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"MAE:  </span><span class="sc">{</span>mae<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"R²:   </span><span class="sc">{</span>r2<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot actual vs predicted</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>plt.plot(test_df[<span class="st">'year'</span>], y_test, label<span class="op">=</span><span class="st">'Actual Blooming DoY'</span>, marker<span class="op">=</span><span class="st">'o'</span>)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>plt.plot(test_df[<span class="st">'year'</span>], y_pred, label<span class="op">=</span><span class="st">'Predicted Blooming DoY'</span>, marker<span class="op">=</span><span class="st">'x'</span>)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Year"</span>)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Blooming Day of Year"</span>)</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Actual vs Predicted Sakura Blooming (2001–2019)"</span>)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>plt.grid(<span class="va">True</span>)</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Evaluation on Test Set (2001–2019):
+RMSE: 6.29
+MAE:  5.02
+R²:   -0.778</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-model-data_files/figure-html/cell-6-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-7" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create diagnostic plots for the OLS model</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="dv">15</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Residual vs Fitted Plot</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>ax1 <span class="op">=</span> fig.add_subplot(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>residuals <span class="op">=</span> model_0.resid</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>fitted <span class="op">=</span> model_0.fittedvalues</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>sns.residplot(x<span class="op">=</span>fitted, y<span class="op">=</span>residuals, lowess<span class="op">=</span><span class="va">True</span>, scatter_kws<span class="op">=</span>{<span class="st">'alpha'</span>: <span class="fl">0.5</span>}, line_kws<span class="op">=</span>{<span class="st">'color'</span>: <span class="st">'red'</span>, <span class="st">'lw'</span>: <span class="dv">1</span>}, ax<span class="op">=</span>ax1)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>ax1.set_title(<span class="st">'Residuals vs Fitted'</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>ax1.set_xlabel(<span class="st">'Fitted values'</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>ax1.set_ylabel(<span class="st">'Residuals'</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>ax1.axhline(y<span class="op">=</span><span class="dv">0</span>, color<span class="op">=</span><span class="st">'k'</span>, linestyle<span class="op">=</span><span class="st">'-'</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co"># QQ Plot for Normality</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>ax2 <span class="op">=</span> fig.add_subplot(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>qqplot(model_0.resid, line<span class="op">=</span><span class="st">'s'</span>, ax<span class="op">=</span>ax2)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>ax2.set_title(<span class="st">'Normal Q-Q'</span>)</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>ax2.set_xlabel(<span class="st">'Theoretical Quantiles'</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>ax2.set_ylabel(<span class="st">'Standardized Residuals'</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Scale-Location Plot (Square root of absolute residuals vs fitted)</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>ax3 <span class="op">=</span> fig.add_subplot(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>sqrt_abs_resid <span class="op">=</span> np.sqrt(np.<span class="bu">abs</span>(residuals))</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>sns.regplot(x<span class="op">=</span>fitted, y<span class="op">=</span>sqrt_abs_resid, lowess<span class="op">=</span><span class="va">True</span>, scatter_kws<span class="op">=</span>{<span class="st">'alpha'</span>: <span class="fl">0.5</span>}, line_kws<span class="op">=</span>{<span class="st">'color'</span>: <span class="st">'red'</span>, <span class="st">'lw'</span>: <span class="dv">1</span>}, ax<span class="op">=</span>ax3)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>ax3.set_title(<span class="st">'Scale-Location'</span>)</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>ax3.set_xlabel(<span class="st">'Fitted values'</span>)</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>ax3.set_ylabel(<span class="st">'$</span><span class="ch">\\</span><span class="st">sqrt{|Standardized Residuals|}$'</span>)</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Leverage vs. Standardized Residuals</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>ax4 <span class="op">=</span> fig.add_subplot(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>infl <span class="op">=</span> model_0.get_influence()</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>hatvals <span class="op">=</span> infl.hat_matrix_diag</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>stud_resid <span class="op">=</span> infl.resid_studentized_external</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Determine leverage threshold</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> <span class="bu">len</span>(model_0.params)  <span class="co"># number of parameters</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>leverage_threshold <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> p <span class="op">/</span> <span class="bu">len</span>(hatvals)</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot points</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>ax4.scatter(hatvals, stud_resid, alpha<span class="op">=</span><span class="fl">0.6</span>)</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>ax4.axhline(y<span class="op">=</span><span class="dv">0</span>, color<span class="op">=</span><span class="st">'k'</span>, linestyle<span class="op">=</span><span class="st">'-'</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="co"># Add reference lines</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>ax4.axhline(y<span class="op">=</span><span class="dv">2</span>, color<span class="op">=</span><span class="st">'g'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, label<span class="op">=</span><span class="st">'Std. Residuals = 2'</span>)</span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>ax4.axhline(y<span class="op">=-</span><span class="dv">2</span>, color<span class="op">=</span><span class="st">'g'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>)</span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>ax4.axvline(x<span class="op">=</span>leverage_threshold, color<span class="op">=</span><span class="st">'b'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, </span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>           label<span class="op">=</span><span class="ss">f'Leverage threshold (</span><span class="sc">{</span>leverage_threshold<span class="sc">:.3f}</span><span class="ss">)'</span>)</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Highlight and label influential points (leverage &gt; threshold or std. residuals &gt; 2)</span></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>influential_points <span class="op">=</span> []</span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(hatvals)):</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="bu">abs</span>(stud_resid[i]) <span class="op">&gt;</span> <span class="dv">2</span>) <span class="kw">or</span> (hatvals[i] <span class="op">&gt;</span> leverage_threshold):</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>        ax4.text(hatvals[i], stud_resid[i], </span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>                <span class="ss">f" </span><span class="sc">{</span>i<span class="sc">}</span><span class="ss"> (</span><span class="sc">{</span>hatvals[i]<span class="sc">:.3f}</span><span class="ss">, </span><span class="sc">{</span>stud_resid[i]<span class="sc">:.2f}</span><span class="ss">)"</span>, </span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a>                fontsize<span class="op">=</span><span class="dv">9</span>, color<span class="op">=</span><span class="st">"red"</span>)</span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a>        influential_points.append(i)</span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a>ax4.set_title(<span class="st">'Leverage vs. Standardized Residuals'</span>)</span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a>ax4.set_xlabel(<span class="st">'Leverage (hat values)'</span>)</span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a>ax4.set_ylabel(<span class="st">'Studentized Residuals'</span>)</span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a>ax4.legend(loc<span class="op">=</span><span class="st">'upper right'</span>, fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-model-data_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="modelling-without-outliers" class="level3">
+<h3 class="anchored" data-anchor-id="modelling-without-outliers">Modelling without Outliers</h3>
+<div id="cell-9" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a clean dataset without influential points</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>df_clean <span class="op">=</span> df.drop(influential_points)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Refit model with clean data</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>X_clean <span class="op">=</span> sm.add_constant(df_clean[<span class="st">'march_temp_c'</span>])</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>y_clean <span class="op">=</span> df_clean[<span class="st">'flower_doy'</span>]</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>model_clean <span class="op">=</span> sm.OLS(y_clean, X_clean).fit()</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>model_clean_robust <span class="op">=</span> sm.OLS(y_clean, X_clean).fit(cov_type<span class="op">=</span><span class="st">'HC1'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-10" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print comparison</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Original model:"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Intercept: </span><span class="sc">{</span>model_0<span class="sc">.</span>params[<span class="dv">0</span>]<span class="sc">:.4f}</span><span class="ss">, Slope: </span><span class="sc">{</span>model_0<span class="sc">.</span>params[<span class="dv">1</span>]<span class="sc">:.4f}</span><span class="ss">, R²: </span><span class="sc">{</span>model_0<span class="sc">.</span>rsquared<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Cleaned model (without influential points):"</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Intercept: </span><span class="sc">{</span>model_clean<span class="sc">.</span>params[<span class="dv">0</span>]<span class="sc">:.4f}</span><span class="ss">, Slope: </span><span class="sc">{</span>model_clean<span class="sc">.</span>params[<span class="dv">1</span>]<span class="sc">:.4f}</span><span class="ss">, R²: </span><span class="sc">{</span>model_clean<span class="sc">.</span>rsquared<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Original model:
+Intercept: 87.5591, Slope: -2.2538, R²: 0.3200
+
+Cleaned model (without influential points):
+Intercept: 85.6057, Slope: -2.9124, R²: 0.3388</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>C:\Users\Chris Lu\AppData\Local\Temp\ipykernel_142868\3890104478.py:3: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  print(f"Intercept: {model_0.params[0]:.4f}, Slope: {model_0.params[1]:.4f}, R²: {model_0.rsquared:.4f}")
+C:\Users\Chris Lu\AppData\Local\Temp\ipykernel_142868\3890104478.py:5: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  print(f"Intercept: {model_clean.params[0]:.4f}, Slope: {model_clean.params[1]:.4f}, R²: {model_clean.rsquared:.4f}")</code></pre>
+</div>
+</div>
+<div id="cell-11" class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model_clean.summary())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             flower_doy   R-squared:                       0.339
+Model:                            OLS   Adj. R-squared:                  0.328
+Method:                 Least Squares   F-statistic:                     30.23
+Date:                Thu, 03 Apr 2025   Prob (F-statistic):           8.65e-07
+Time:                        01:03:40   Log-Likelihood:                -174.83
+No. Observations:                  61   AIC:                             353.7
+Df Residuals:                      59   BIC:                             357.9
+Df Model:                           1                                         
+Covariance Type:            nonrobust                                         
+================================================================================
+                   coef    std err          t      P&gt;|t|      [0.025      0.975]
+--------------------------------------------------------------------------------
+const           85.6057      0.861     99.470      0.000      83.884      87.328
+march_temp_c    -2.9124      0.530     -5.498      0.000      -3.972      -1.852
+==============================================================================
+Omnibus:                        1.647   Durbin-Watson:                   1.779
+Prob(Omnibus):                  0.439   Jarque-Bera (JB):                1.232
+Skew:                          -0.347   Prob(JB):                        0.540
+Kurtosis:                       3.051   Cond. No.                         3.17
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.</code></pre>
+</div>
+</div>
+<div id="cell-12" class="cell" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model_clean_robust.summary())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             flower_doy   R-squared:                       0.339
+Model:                            OLS   Adj. R-squared:                  0.328
+Method:                 Least Squares   F-statistic:                     22.88
+Date:                Thu, 03 Apr 2025   Prob (F-statistic):           1.19e-05
+Time:                        01:03:40   Log-Likelihood:                -174.83
+No. Observations:                  61   AIC:                             353.7
+Df Residuals:                      59   BIC:                             357.9
+Df Model:                           1                                         
+Covariance Type:                  HC1                                         
+================================================================================
+                   coef    std err          z      P&gt;|z|      [0.025      0.975]
+--------------------------------------------------------------------------------
+const           85.6057      0.980     87.318      0.000      83.684      87.527
+march_temp_c    -2.9124      0.609     -4.783      0.000      -4.106      -1.719
+==============================================================================
+Omnibus:                        1.647   Durbin-Watson:                   1.779
+Prob(Omnibus):                  0.439   Jarque-Bera (JB):                1.232
+Skew:                          -0.347   Prob(JB):                        0.540
+Kurtosis:                       3.051   Cond. No.                         3.17
+==============================================================================
+
+Notes:
+[1] Standard Errors are heteroscedasticity robust (HC1)</code></pre>
+</div>
+</div>
+<div id="cell-13" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot with year-based color gradient</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>scatter <span class="op">=</span> plt.scatter(df_clean[<span class="st">'march_temp_c'</span>], df_clean[<span class="st">'flower_doy'</span>], c<span class="op">=</span>df_clean[<span class="st">'year'</span>], cmap<span class="op">=</span><span class="st">'viridis'</span>, s<span class="op">=</span><span class="dv">60</span>, edgecolor<span class="op">=</span><span class="st">'k'</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>plt.plot(df_clean[<span class="st">'march_temp_c'</span>], model_clean.predict(X_clean), color<span class="op">=</span><span class="st">'red'</span>, label<span class="op">=</span><span class="st">'OLS Fit'</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>plt.text(<span class="op">-</span><span class="fl">0.8</span>, <span class="dv">95</span>, <span class="ss">f"blooming_day = </span><span class="sc">{</span>model_clean<span class="sc">.</span>params[<span class="dv">1</span>]<span class="sc">:.2f}</span><span class="ss"> * temp + </span><span class="sc">{</span>model_clean<span class="sc">.</span>params[<span class="dv">0</span>]<span class="sc">:.2f}</span><span class="ss">"</span>, color<span class="op">=</span><span class="st">"red"</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>plt.colorbar(scatter, label<span class="op">=</span><span class="st">'Year'</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Sakura Blooming DoY vs March Temperature with Year Gradient"</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"March Avg Temperature (°C)"</span>)</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Blooming Day of Year (DoY)"</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>C:\Users\Chris Lu\AppData\Local\Temp\ipykernel_142868\3504803602.py:5: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  plt.text(-0.8, 95, f"blooming_day = {model_clean.params[1]:.2f} * temp + {model_clean.params[0]:.2f}", color="red", fontsize=12)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-model-data_files/figure-html/cell-12-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="test-model-1" class="level4">
+<h4 class="anchored" data-anchor-id="test-model-1">Test Model</h4>
+<div id="cell-15" class="cell" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">##Modelling Training Dataset</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Test OLS model (nonrobust)</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>model_test <span class="op">=</span> model_clean</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare test data</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>X_test <span class="op">=</span> sm.add_constant(test_df[<span class="st">'march_temp_c'</span>])</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>y_test <span class="op">=</span> test_df[<span class="st">'flower_doy'</span>]</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict on test data</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> model_test.predict(X_test)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluation metrics</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>rmse <span class="op">=</span> np.sqrt(mean_squared_error(y_test, y_pred))</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>mae <span class="op">=</span> mean_absolute_error(y_test, y_pred)</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>r2 <span class="op">=</span> r2_score(y_test, y_pred)</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Evaluation on Test Set (2001–2019):"</span>)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"RMSE: </span><span class="sc">{</span>rmse<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"MAE:  </span><span class="sc">{</span>mae<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"R²:   </span><span class="sc">{</span>r2<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot actual vs predicted</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>plt.plot(test_df[<span class="st">'year'</span>], y_test, label<span class="op">=</span><span class="st">'Actual Blooming DoY'</span>, marker<span class="op">=</span><span class="st">'o'</span>)</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>plt.plot(test_df[<span class="st">'year'</span>], y_pred, label<span class="op">=</span><span class="st">'Predicted Blooming DoY'</span>, marker<span class="op">=</span><span class="st">'x'</span>)</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Year"</span>)</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Blooming Day of Year"</span>)</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Actual vs Predicted Sakura Blooming (2001–2019)"</span>)</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>plt.grid(<span class="va">True</span>)</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Evaluation on Test Set (2001–2019):
+RMSE: 5.70
+MAE:  4.46
+R²:   -0.461</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="04-model-data_files/figure-html/cell-13-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      return note.innerHTML;
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
