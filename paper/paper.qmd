@@ -8,17 +8,7 @@ author:
     - Randall Ni
 abstract:
     This paper examines the relationship between temperature and cherry blossom (sakura) flowering dates in Kyoto, Japan, analyzing a comprehensive dataset spanning nearly 1200 years from 812 CE to present day. While previous research has focused on shorter timeframes, this analysis integrates historical records compiled by Aono (2010) with contemporary Japanese Meteorological Agency data to better understand how climate change affects the timing of this culturally significant phenomenon. By modeling flowering day as a function of mean March temperatures, we identify significant trends that have implications for the traditional practice of hanami (flower-viewing) and local ecosystems. Our findings demonstrate the need for cultural adaptation to shifting bloom schedules and highlight the importance of extensive historical climate data in developing accurate predictive models for natural phenomena affected by global warming.
-format:
-    pdf:
-        documentclass: article
-        papersize: letter
-        toc: true
-        number-sections: true
-        colorlinks: true
-        fig-cap-location: bottom
-        tbl-cap-location: top
-        fontsize: "12"
-        geometry: "margin=1.2in" # print margins (change if wanting to)
+format: pdf
 bibliography: "references.bib"
 execute:
     echo: false  # Hide code by default
