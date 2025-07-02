@@ -4,6 +4,8 @@ Understanding Temperature's Role in Earlier Cherry Blossom Blooming Times in Kyo
 ## Overview
 This project examines the relationship between temperature and cherry blossom (sakura) flowering dates in Kyoto, Japan, analyzing a comprehensive dataset spanning nearly 1200 years from 812 CE to the present day. By modeling flowering day as a function of mean March temperatures, we identify significant trends that have implications for both the traditional practice of hanami (flower-viewing) and local ecosystems. Our analysis reveals a significant inverse relationship between March temperatures and sakura bloom dates, with warmer temperatures consistently associated with earlier flowering times. Our findings demonstrate the need for cultural adaptation to shifting bloom schedules due to climate change and highlight the consideration of extensive historical climate data in the process of developing accurate predictive models.
 
+For this work, our group won 'Best Data Visualization' out of 5 other teams in our class, awarded by our Professor, Dr. Tao Wang.
+
 ## File Structure and Workflow
 The repository is structured as follows:
 
